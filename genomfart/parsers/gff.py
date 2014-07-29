@@ -67,4 +67,78 @@ class gff_parser(object):
                 self.graph.node[element_id]['type'] = line[2]
                 self.graph.node[element_id]['strand'] = line[6]
                 # Make edges from parent to child if necessary
-                if 'Parent' in 
+                if 'Parent' in attr_dict:
+                    parents = attr_dict['Parent'].split(',')
+                    for parent in parents:
+                        self.graph.add_edge(parent, element_id)
+    def get_overlapping_element_ids(self, seqid, start, end):
+        """ Gets the ids for any elements that overlap a given range
+
+        Parameters
+        ----------
+        seqid : str
+            The name of the coordinate system to check
+        start : int
+            The start of the range to check (inclusive, 1-based)
+        end : int
+            The end of the range to check (inclusive, 1-based)
+
+        Raises
+        ------
+        KeyError
+            If the seqid is not present
+        
+        Returns
+        -------
+        Set of ids for elements overlapping the range
+        """
+        checkRange = Range.closed(start, end)
+        return self.bucketmaps[seqid].get(checkRange)
+    def get_element_info(self, element_id):
+        """ Gets information on a particular element
+
+        Parameters
+        ----------
+        element_id : str
+            The id of the element
+
+        Returns
+        -------
+        Dictionary of {'type'->type, 'strand'->'strand', 'Ranges'->[Ranges],
+        'attributes'->[attribute_dicts]}
+        """
+        return {'type':self.graph.node[element_id]['type'],
+                'strand':self.graph.node[element_id['strand']],
+                'Ranges':self.graph.node[element_id]['Ranges'],
+                'attributes':self.graph.node[element_id]['attributes']}
+    def get_element_ids_of_type(self, seqid, element_type, start = None, end = None):
+        """ Gets element ids of some type along a coordinate system
+
+        Parameters
+        ----------
+        seqid : str
+            The name of the coordinate system to check
+        element_type : str
+            The type of the elements you want (e.g. 'gene' or 'mRNA')
+        start : int, optional
+            The start point for getting the elements (inclusive, 1-based)
+        end : int, optional
+            The end point for getting the elements (inclusive, 1-based)
+
+        Raises
+        ------
+        KeyError
+            If the seqid isn't included
+        
+        Returns
+        -------
+        Generator of element_ids
+        """
+        added = set()
+        iterator = self.bucketmaps[seq_id].iteritems(start=start,end=end)
+        for theRange, element_id in iterator:
+            if element_id in added:
+                continue
+            elif self.graph.node[element_id]['type'] == element_type:
+                yield element_id
+                added.add(element_id)
