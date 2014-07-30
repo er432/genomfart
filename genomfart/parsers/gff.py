@@ -9,19 +9,22 @@ class gff_parser(object):
 
     All coordinates are 1-based
     """
-    def __init__(self, gff_file):
+    def __init__(self, gff_file, exclude_types = None):
         """ Instantiates the gff file
 
         Parameters
         ----------
         gff_file : str
             The filename of a gff file
+        exclude_types : set
+            The names of types (e.g. 'repeat') that you don't want to store
 
         Raises
         ------
         IOError
             If the file isn't correctly formatted
         """
+        if exclude_types is None: exclude_types = set()
         ## Set up a directed graph where nodes are ids and a directed edge
         # is placed going from parent to child. Each node has a "Ranges" attribute
         # that lists the Ranges corresponding to the ID, a "seqid" attribute
@@ -45,6 +48,7 @@ class gff_parser(object):
                 line = line.strip().split('\t')
                 if len(line) != 9:
                     raise IOError("Line(s) do not conform to gff v. 3 format")
+                if line[2] in exclude_types: continue
                 # Make a new RangeBucketMap for the seqid if necessary
                 seqid = line[0]
                 if seqid not in self.bucketmaps:

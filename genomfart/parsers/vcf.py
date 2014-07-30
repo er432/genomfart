@@ -279,15 +279,26 @@ class VCF_parser:
             else:
                 yield chrom,pos,alleles,geno_dict
             self.current_line += 1
-    def parse_site_infos(self):
+    def parse_site_infos(self, filter_excludes = None, filter_requires = None):
         """
         Iterates through the VCF file, getting the info for each site
+
+        Parameters
+        ----------
+        filter_excludes : set, optional
+            Filter tags that should exclude the locus from being returned
+        filter_requires : set, optional
+            Filter tags that should be required for a locus to be returned
 
         Returns
         -------
         A generator that generates tuples of chrom,pos,{ref,alt1,alt2,...),{field->val}.
         Fields without a corresponding value will have value "None"
         """
+        if filter_excludes is None:
+            filter_excludes = set()
+        if filter_requires is None:
+            filter_requires = set()
         # Go to the start of the genotyping part of the file
         file_seek_pos = self.file_handle.seek(self.start_genotype_byte,0)
         # Go through the file
@@ -296,6 +307,10 @@ class VCF_parser:
             if len(line) < 2: continue
             # Get chromosome and position
             chrom,pos = map(int,line[:2])
+            # Get quality and filter if necessary
+            filt = line[self.header_dict['FILTER']].split(',')
+            if len(filter_excludes.intersection(filt)) > 0: continue
+            elif len(filter_requires.intersection(filt)) != len(filter_requires): continue
             # Get the possible alleles
             alt_alleles = line[self.header_dict['ALT']]
             if alt_alleles != '.':
