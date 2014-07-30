@@ -63,6 +63,7 @@ class gff_parser(object):
                     self.graph.node[element_id]['Ranges'] = []
                     self.graph.node[element_id]['attributes'] = []
                 # Add/update parameters in graph
+                self.graph.node[element_id]['seqid'] = line[0]
                 self.graph.node[element_id]['Ranges'].append(element_range)
                 self.graph.node[element_id]['attributes'].append(attr_dict)
                 self.graph.node[element_id]['type'] = line[2]
@@ -105,11 +106,12 @@ class gff_parser(object):
 
         Returns
         -------
-        Dictionary of {'type'->type, 'strand'->'strand', 'Ranges'->[Ranges],
+        Dictionary of {'seqid' -> seqid, type'->type, 'strand'->'strand', 'Ranges'->[Ranges],
         'attributes'->[attribute_dicts]}
         """
         return {'type':self.graph.node[element_id]['type'],
                 'strand':self.graph.node[element_id]['strand'],
+                'seqid':self.graph.node[element_id]['seqid'],
                 'Ranges':self.graph.node[element_id]['Ranges'],
                 'attributes':self.graph.node[element_id]['attributes']}
     def get_element_ids_of_type(self, seqid, element_type, start = None, end = None):
@@ -143,3 +145,39 @@ class gff_parser(object):
             elif self.graph.node[element_id]['type'] == element_type:
                 yield element_id
                 added.add(element_id)
+    def get_element_children_ids(self, element_id):
+        """ Gets the ids of the children of an element
+
+        Parameters
+        ----------
+        element_id : str
+            The element for which you want the children
+
+        Raises
+        ------
+        KeyError
+            If the element is not present
+
+        Returns
+        -------
+        List of the children IDs of the element
+        """
+        return self.graph.successors(element_id)
+    def get_element_parent_ids(self, element_id):
+        """ Gets the ids of the parents of an element
+
+        Parameters
+        ----------
+        element_id : str
+            The element for which you want the parents
+
+        Raises
+        ------
+        KeyError
+            If the element is not present
+
+        Returns
+        -------
+        List of the parent IDs of the element
+        """
+        return self.graph.predecessors(element_id)

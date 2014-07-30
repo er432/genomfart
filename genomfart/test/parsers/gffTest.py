@@ -27,6 +27,7 @@ class gff_parserTest(unittest.TestCase):
         if debug: print("Testing get_element_info")
         gene_info = self.parser.get_element_info('gene:GRMZM5G811749')
         self.assertEqual(gene_info['type'],'gene')
+        self.assertEqual(gene_info['seqid'], 'Pt')
         self.assertEqual(len(gene_info['Ranges']),1)
         self.assertEqual(gene_info['Ranges'][0],Range.closed(3363,5604))
         self.assertEqual(len(gene_info['attributes']),1)
@@ -40,6 +41,25 @@ class gff_parserTest(unittest.TestCase):
         self.assertEqual(next(iterator), 'gene:GRMZM5G811749')
         with self.assertRaises(StopIteration):
             next(iterator)
+    def test_get_element_children_ids(self):
+        if debug: print("Testing get_element_children_ids")
+        children = self.parser.get_element_children_ids('gene:GRMZM5G811749')
+        self.assertEqual(len(children),1)
+        self.assertEqual(children[0],'transcript:GRMZM5G811749_T01')
+        children = self.parser.get_element_children_ids('transcript:GRMZM5G811749_T01')
+        self.assertEqual(len(children), 3)
+        self.assertFalse('gene:GRMZM5G811749' in children)
+        self.assertTrue('CDS:GRMZM5G811749_P01' in children)
+    def test_get_element_parent_ids(self):
+        if debug: print("Testing get_element_parent_ids")
+        parents = self.parser.get_element_parent_ids('gene:GRMZM5G811749')
+        self.assertEqual(len(parents),0)
+        parents = self.parser.get_element_parent_ids('transcript:GRMZM5G811749_T01')
+        self.assertEqual(len(parents),1)
+        self.assertEqual(parents[0],'gene:GRMZM5G811749')
+        parents = self.parser.get_element_parent_ids('CDS:GRMZM5G811749_P01')
+        self.assertEqual(len(parents),1)
+        self.assertEqual(parents[0],'transcript:GRMZM5G811749_T01')
 if __name__ == "__main__":
     debug = True
     unittest.main(exit = False)
