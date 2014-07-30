@@ -51,7 +51,8 @@ class gff_parser(object):
                 if 'ID' in attr_dict:
                     element_id = attr_dict['ID']
                 else:
-                    element_id = '%s:%s_%s_%s:%s' % (line[2],line[0],line[3],line[4])
+                    element_id = '%s:%s_%s_%s:%s' % (line[2],line[0],line[3],line[4],
+                                                     line[6])
                 # Make the Range for this element
                 element_range = Range.closed(int(line[3]),int(line[4]))
                 # Put element in RangeBucketMap
@@ -108,7 +109,7 @@ class gff_parser(object):
         'attributes'->[attribute_dicts]}
         """
         return {'type':self.graph.node[element_id]['type'],
-                'strand':self.graph.node[element_id['strand']],
+                'strand':self.graph.node[element_id]['strand'],
                 'Ranges':self.graph.node[element_id]['Ranges'],
                 'attributes':self.graph.node[element_id]['attributes']}
     def get_element_ids_of_type(self, seqid, element_type, start = None, end = None):
@@ -135,7 +136,7 @@ class gff_parser(object):
         Generator of element_ids
         """
         added = set()
-        iterator = self.bucketmaps[seq_id].iteritems(start=start,end=end)
+        iterator = self.bucketmaps[seqid].iteritems(start=start,end=end)
         for theRange, element_id in iterator:
             if element_id in added:
                 continue
