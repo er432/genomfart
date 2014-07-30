@@ -1,5 +1,6 @@
 import networkx as nx
 from Ranger import RangeBucketMap, Range
+import gzip
 
 class gff_parser(object):
     """ Class used to parse and analyze GFF (version 3) files.
@@ -32,8 +33,12 @@ class gff_parser(object):
         ## Dictionary of seq_id -> RangeBucketMap for each coordinate system. Each Range
         # in a RangeBucketMap maps to an ID that corresponds to a node in the graph
         self.bucketmaps = {}
+        if gff_file.endswith('.gz'):
+            gff_handle = gzip.open(gff_file)
+        else:
+            gff_handle = open(gff_file)
         ## Parse the file
-        with open(gff_file) as gff_handle:
+        with gff_handle:
             for line in gff_handle:
                 if line.startswith('#'): continue
                 elif len(line) < 2: continue
