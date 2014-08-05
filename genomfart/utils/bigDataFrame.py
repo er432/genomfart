@@ -204,6 +204,7 @@ class BigDataFrame(object):
         closest_ind_ind = max(bisect_left(self.ordered_row_inds, line_ind)-1, 0)
         # Send the handle to the location
         self.handle.seek(self.row_byte_dict[closest_ind_ind])
+        self.current_line_ind = self.ordered_row_inds[closest_ind_ind]
         return self.ordered_row_inds[closest_ind_ind]
     def get_current_row_ind(self):
         """ Gets the index of the current row
