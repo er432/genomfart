@@ -161,10 +161,9 @@ class BigDataFrame(object):
             return self.data[row_ind]
         elif self.current_line_ind == row_ind:
             line = self.handle.readline()
-            self.current_line_ind += 1
             if (self.current_line_ind + 1) % self.byte_record_interval == 0:
                 # Record the current byte if necessary
-                self.row_byte_dict[self.current_line_ind] = self.handle.tell()
+                self.row_byte_dict[self.current_line_ind+1] = self.handle.tell()
             if self.current_line_ind == row_ind:
                 ## If we're on the line we want
                 # Put the line in the cache after processing
@@ -177,7 +176,7 @@ class BigDataFrame(object):
             for line in self.handle:
                 if (self.current_line_ind + 1) % self.byte_record_interval == 0:
                     # Record the current byte if necessary
-                    self.row_byte_dict[self.current_line_ind] = self.handle.tell()
+                    self.row_byte_dict[self.current_line_ind+1] = self.handle.tell()
                 if self.current_line_ind == row_ind:
                     ## If we're on the line we want
                     # Put the line in the cache after processing
