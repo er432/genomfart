@@ -14,7 +14,8 @@ class BigDataFrame(object):
     maintained along with a handle and a position in the file
     """
     def __init__(self, filename, header = True, sep='\t',
-                 detect_type = True, ignore_chars = None, maxsize=10000,
+                 detect_type = True, assume_uniform_types = True,
+                 ignore_chars = None, maxsize=10000,
                  byte_record_interval=10000):
         """ Instantiates the big data frame
 
@@ -31,6 +32,9 @@ class BigDataFrame(object):
         detect_type : boolean, optional
             Whether type should be guessed on loading. If false, everythin returned
             as str
+        assume_uniform_types : boolean, optional
+            Whether it should be assumed that the types in the first row apply to all rows.
+            Only matters if detect_type is True
         ignore_chars : Set
             Characters that signal a line in the file should be skipped if it
             starts with one of those characters
@@ -40,6 +44,7 @@ class BigDataFrame(object):
             How often to record the starting byte of a row
         """
         self.byte_record_interval = byte_record_interval
+        self.ignore_chars = ignore_chars if ignore_chars else set()
         ## Dictionary with headers for each of the columns, where values are integer
         # values
         self.colLabels = {}
@@ -49,14 +54,18 @@ class BigDataFrame(object):
         ## LRU cache holding rows of data, with row indices as keys
         self.data = LRUCache(maxsize = maxsize)
         ## Function used to convert to correct type
-        self.type_func = lambda x: x
+        self.type_func = lambda x: x[1]
+        self.type_dict = {}
         if detect_type:
-            def type_func(x):
-                if float_re.match(x): return float(x)
-                elif int_re.match(x): return int(x)
-                else:
-                    return str(x)
-            self.type_func = type_func
+            if assume_uniform_types:
+                self.type_func = lambda x: self.type_dict[x[0]](x[1])
+            else:
+                def type_func(x):
+                    if float_re.match(x[1]): return float(x[1])
+                    elif int_re.match(x[1]): return int(x[1])
+                    else:
+                        return str(x[1])
+                self.type_func = type_func
         ## Function used to split lines
         if type(sep) == type(int_re):
             self.split_func = lambda x: re.split(sep, x)
@@ -69,12 +78,21 @@ class BigDataFrame(object):
             self.handle = gzip.open(filename)
         else:
             self.handle = open(filename)
+        ## Skip anything that needs to be skipped
+        current_byte = self.handle.tell()
+        while 1:
+            current_byte = self.handle.tell()
+            line = self.handle.readline().strip()
+            if line[0] in self.ignore_chars: continue
+            else:
+                break
+        self.handle.seek(current_byte)
         ## Incorporate header if necessary
         if header:
             line = self.handle.readline().strip()
             if ignore_chars:
                 while 1:
-                    if line[0] in ignore_chars:
+                    if line[0] in self.ignore_chars:
                         line = self.handle.readline().strip()
                     else:
                         break
@@ -82,7 +100,18 @@ class BigDataFrame(object):
             for i,colname in enumerate(line):
                 self.colLabels[colname] = i
         ## Create dictionary of line index -> byte
-        self.row_byte_dict = {0: self.handle.tell()}
+        self.row_byte_dict = {0: self.handle.tell()}                
+        ## Get the types
+        line = self.handle.readline().strip()
+        line = self.split_func(line)
+        for i, val in enumerate(line):
+            if float_re.match(val):
+                self.type_dict[i] = float
+            elif int_re.match(val):
+                self.type_dict[i] = int
+            else:
+                self.type_dict[i] = str
+        self.handle.seek(self.row_byte_dict[0])
         ## Ordered list of the line indices that have been recorded
         self.ordered_row_inds = [0]
         ## The current line index
@@ -136,7 +165,7 @@ class BigDataFrame(object):
         self.current_line_ind = self._goto_closest_line(0)
         header = True if len(self.colLabels) > 0 else False
         for line in self.handle:
-            row = tuple(map(self.type_func, self.split_func(line.strip())))
+            row = tuple(map(self.type_func, enumerate(self.split_func(line.strip()))))
             self.data[self.current_line_ind] = row
             if header:
                 yield dict((k,row[v]) for k,v in self.colLabels.items())
@@ -167,7 +196,7 @@ class BigDataFrame(object):
                 ## If we're on the line we want
                 # Put the line in the cache after processing
                 self.data[self.current_line_ind] = tuple(map(self.type_func,
-                                                self.split_func(line.strip())))
+                                                enumerate(self.split_func(line.strip()))))
                 return self.data[self.current_line_ind]           
         else:
             # Send the handle to the closest line
@@ -180,7 +209,7 @@ class BigDataFrame(object):
                     ## If we're on the line we want
                     # Put the line in the cache after processing
                     self.data[self.current_line_ind] = tuple(map(self.type_func,
-                                                    self.split_func(line.strip())))
+                                                    enumerate(self.split_func(line.strip()))))
                     return self.data[self.current_line_ind]
                 self.current_line_ind += 1
         # If nothing else, there's an index error
