@@ -134,16 +134,15 @@ class BigDataFrame(object):
         Generator of dictionaries for each row
         """
         self.current_line_ind = self._goto_closest_line(0)
-        while 1:
-            try:
-                row = self._fetch_from_cache(self.current_line_ind)
-                if len(self.colLabels) > 0:
-                    yield dict((k,row[v]) for k,v in self.colLabels.items())
-                else:
-                    yield dict((i,x) for i,x in enumerate(row))
-                self.current_line_ind += 1
-            except IndexError:
-                break
+        header = True if len(self.colLabels) > 0 else False
+        for line in self.handle:
+            row = tuple(map(self.type_func, self.split_func(line.strip())))
+            self.data[self.current_line_ind] = row
+            if header:
+                yield dict((k,row[v]) for k,v in self.colLabels.items())
+            else:
+                yield dict((i,x) for i,x in enumerate(row))            
+            self.current_line_ind += 1
     def _fetch_from_cache(self, row_ind):
         """ Gets a row from the cache if present. Otherwise, puts it in the cache
         and fetches it
