@@ -6,12 +6,14 @@ import sys
 packages = ['genomfart',
             'genomfart.parsers',
             'genomfart.data',
+            'genomfart.utils',
             'genomfart.test',
-            'genomfart.test.parsers'
+            'genomfart.test.parsers',
+            'genomfart.test.utils'
            ]
 setup(
     name='genomfart',
-    version='0.1',
+    version='0.2',
     author='Eli Rodgers-Melnick',
     author_email='er432@cornell.edu',
     description='A Genomics package for Python',

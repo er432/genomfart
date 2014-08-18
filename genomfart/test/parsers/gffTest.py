@@ -60,6 +60,23 @@ class gff_parserTest(unittest.TestCase):
         parents = self.parser.get_element_parent_ids('CDS:GRMZM5G811749_P01')
         self.assertEqual(len(parents),1)
         self.assertEqual(parents[0],'transcript:GRMZM5G811749_T01')
+    def test_get_closest_element_id(self):
+        if debug: print("Testing get_closest_element_id")
+        closest_ids = self.parser.get_closest_element_id('Pt',2000,2200)
+        self.assertEqual(closest_ids, set(['gene:GRMZM5G836994','transcript:GRMZM5G836994_T01',
+                                           'CDS:GRMZM5G836994_P01','exon:Pt_1674_3308:-']))
+        closest_ids = self.parser.get_closest_element_id('Pt',15838,15840)
+        self.assertEqual(closest_ids, set(['repeat_region:Pt_15787_15836:?']))
+        closest_ids = self.parser.get_closest_element_id('Pt',15880,15882)
+        self.assertEqual(closest_ids, set(['repeat_region:Pt_15885_15961:+']))
+    def test_get_closest_element_id_of_type(self):
+        if debug: print("Testing get_closest_element_id")
+        closest_ids = self.parser.get_closest_element_id_of_type('Pt',2000,2200,'gene')
+        self.assertEqual(closest_ids, set(['gene:GRMZM5G836994']))
+        closest_ids = self.parser.get_closest_element_id_of_type('Pt',15838,15840,'repeat_region')
+        self.assertEqual(closest_ids, set(['repeat_region:Pt_15787_15836:?']))
+        closest_ids = self.parser.get_closest_element_id_of_type('Pt',15880,15882,'gene')
+        self.assertEqual(closest_ids, set(['gene:GRMZM5G813608']))        
 if __name__ == "__main__":
     debug = True
     unittest.main(exit = False)

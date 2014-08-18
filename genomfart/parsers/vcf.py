@@ -15,20 +15,6 @@ class VCF_parser:
     """
     Parser for VCF files
     """
-    ## Holds the version of the VCF file
-    version = None
-    ## Dictionary of ID -> {field -> val}
-    info_dict = None
-    ## Dictionary of column_name -> index
-    header_dict = None
-    ## Holds the names of the genotypes that are available
-    genotypes = None
-    ## Holds the current site line
-    current_line = 0
-    ## Holds onto the file handle
-    file_handle = None
-    ## Holds the byte position for the beginning of the first genotype line
-    start_genotype_byte = None
     def __init__(self, vcf_file):
         """
         Instantiates a parser for the VCF file

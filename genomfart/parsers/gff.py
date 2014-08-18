@@ -1,13 +1,34 @@
-import networkx as nx
-from Ranger import RangeBucketMap, Range
+from genomfart.utils.genomeAnnotationGraph import genomeAnnotationGraph
 import gzip
 
-class gff_parser(object):
+class gff_parser(genomeAnnotationGraph):
     """ Class used to parse and analyze GFF (version 3) files.
     The class represents any hierarchical structure as a directed graph
     and puts the individual pieces into a RangeBucketMap
 
     All coordinates are 1-based
+
+    Examples
+    --------
+
+    >>> from genomfart.parsers.gff import gff_parser
+    >>> from genomfart.data.data_constants import GFF_TEST_FILE
+    >>> parser = gff_parser(GFF_TEST_FILE)
+    >>> parser.get_overlapping_element_ids('Pt',100,4000)
+    set(['three_prime_UTR:Pt_3363_4490:-', 'exon:Pt_1674_3308:-',
+    'CDS:GRMZM5G836994_P01', 'exon:Pt_3363_4708:-',
+    'transcript:GRMZM5G811749_T01', 'transcript:GRMZM5G836994_T01',
+    'repeat_region:Pt_3550_3560:?', 'repeat_region:Pt_3683_3696:?',
+    'gene:GRMZM5G811749', 'gene:GRMZM5G836994', 'repeat_region:Pt_320_1262:+',
+    'repeat_region:Pt_3764_3775:?'])
+    >>> gene_info = parser.get_element_info('gene:GRMZM5G811749')
+    >>> gene_info
+    {'Ranges': [[3363 , 5604]], 'attributes': [{'logic_name': 'genebuilder',
+    'external_name': 'RPS16',
+    'description': '30S ribosomal protein S16%2C chloroplastic  [Source:UniProtKB/Swiss-Prot%3BAcc:P27723]', 'ID': 'gene:GRMZM5G811749',
+    'biotype': 'protein_coding'}], 'seqid': 'Pt', 'type': 'gene', 'strand': '-'}
+    >>> [x for x in parser.get_element_ids_of_type('Pt','gene',start=100,end=4000)]
+    ['gene:GRMZM5G836994', 'gene:GRMZM5G811749']
     """
     def __init__(self, gff_file, exclude_types = None):
         """ Instantiates the gff file
@@ -24,18 +45,8 @@ class gff_parser(object):
         IOError
             If the file isn't correctly formatted
         """
+        super(gff_parser, self).__init__()
         if exclude_types is None: exclude_types = set()
-        ## Set up a directed graph where nodes are ids and a directed edge
-        # is placed going from parent to child. Each node has a "Ranges" attribute
-        # that lists the Ranges corresponding to the ID, a "seqid" attribute
-        # that gives the coordinate system where the node is located, a
-        # "type" attribute that gives the element type, a "strand" attribute
-        # that gives the element strand (not always applicable), and an "attributes"
-        # attribute that is a list of dictionaries of key-> val for any other attributes
-        self.graph = nx.DiGraph()
-        ## Dictionary of seq_id -> RangeBucketMap for each coordinate system. Each Range
-        # in a RangeBucketMap maps to an ID that corresponds to a node in the graph
-        self.bucketmaps = {}
         if gff_file.endswith('.gz'):
             gff_handle = gzip.open(gff_file)
         else:
@@ -51,8 +62,6 @@ class gff_parser(object):
                 if line[2] in exclude_types: continue
                 # Make a new RangeBucketMap for the seqid if necessary
                 seqid = line[0]
-                if seqid not in self.bucketmaps:
-                    self.bucketmaps[seqid] = RangeBucketMap()
                 # Parse the attributes into a dictionary of key->val
                 attr_dict = dict((k,v) for k,v in map(lambda x: x.split('='),
                                                       line[8].split(';')))
@@ -62,131 +71,9 @@ class gff_parser(object):
                 else:
                     element_id = '%s:%s_%s_%s:%s' % (line[2],line[0],line[3],line[4],
                                                      line[6])
-                # Make the Range for this element
-                element_range = Range.closed(int(line[3]),int(line[4]))
-                # Put element in RangeBucketMap
-                self.bucketmaps[seqid].put(element_range, element_id)
-                # Put node in the graph
-                if element_id not in self.graph:
-                    self.graph.add_node(element_id)
-                    self.graph.node[element_id]['Ranges'] = []
-                    self.graph.node[element_id]['attributes'] = []
-                # Add/update parameters in graph
-                self.graph.node[element_id]['seqid'] = line[0]
-                self.graph.node[element_id]['Ranges'].append(element_range)
-                self.graph.node[element_id]['attributes'].append(attr_dict)
-                self.graph.node[element_id]['type'] = line[2]
-                self.graph.node[element_id]['strand'] = line[6]
-                # Make edges from parent to child if necessary
+                parents = set()
                 if 'Parent' in attr_dict:
-                    parents = attr_dict['Parent'].split(',')
-                    for parent in parents:
-                        self.graph.add_edge(parent, element_id)
-    def get_overlapping_element_ids(self, seqid, start, end):
-        """ Gets the ids for any elements that overlap a given range
-
-        Parameters
-        ----------
-        seqid : str
-            The name of the coordinate system to check
-        start : int
-            The start of the range to check (inclusive, 1-based)
-        end : int
-            The end of the range to check (inclusive, 1-based)
-
-        Raises
-        ------
-        KeyError
-            If the seqid is not present
-        
-        Returns
-        -------
-        Set of ids for elements overlapping the range
-        """
-        checkRange = Range.closed(start, end)
-        return self.bucketmaps[seqid].get(checkRange)
-    def get_element_info(self, element_id):
-        """ Gets information on a particular element
-
-        Parameters
-        ----------
-        element_id : str
-            The id of the element
-
-        Returns
-        -------
-        Dictionary of {'seqid' -> seqid, type'->type, 'strand'->'strand', 'Ranges'->[Ranges],
-        'attributes'->[attribute_dicts]}
-        """
-        return {'type':self.graph.node[element_id]['type'],
-                'strand':self.graph.node[element_id]['strand'],
-                'seqid':self.graph.node[element_id]['seqid'],
-                'Ranges':self.graph.node[element_id]['Ranges'],
-                'attributes':self.graph.node[element_id]['attributes']}
-    def get_element_ids_of_type(self, seqid, element_type, start = None, end = None):
-        """ Gets element ids of some type along a coordinate system
-
-        Parameters
-        ----------
-        seqid : str
-            The name of the coordinate system to check
-        element_type : str
-            The type of the elements you want (e.g. 'gene' or 'mRNA')
-        start : int, optional
-            The start point for getting the elements (inclusive, 1-based)
-        end : int, optional
-            The end point for getting the elements (inclusive, 1-based)
-
-        Raises
-        ------
-        KeyError
-            If the seqid isn't included
-        
-        Returns
-        -------
-        Generator of element_ids
-        """
-        added = set()
-        iterator = self.bucketmaps[seqid].iteritems(start=start,end=end)
-        for theRange, element_id in iterator:
-            if element_id in added:
-                continue
-            elif self.graph.node[element_id]['type'] == element_type:
-                yield element_id
-                added.add(element_id)
-    def get_element_children_ids(self, element_id):
-        """ Gets the ids of the children of an element
-
-        Parameters
-        ----------
-        element_id : str
-            The element for which you want the children
-
-        Raises
-        ------
-        KeyError
-            If the element is not present
-
-        Returns
-        -------
-        List of the children IDs of the element
-        """
-        return self.graph.successors(element_id)
-    def get_element_parent_ids(self, element_id):
-        """ Gets the ids of the parents of an element
-
-        Parameters
-        ----------
-        element_id : str
-            The element for which you want the parents
-
-        Raises
-        ------
-        KeyError
-            If the element is not present
-
-        Returns
-        -------
-        List of the parent IDs of the element
-        """
-        return self.graph.predecessors(element_id)
+                    parents = parents.union(attr_dict['Parent'].split(','))
+                self.add_annotation(element_id, line[0], int(line[3]), int(line[4]),
+                                    line[2], strand=line[6], parents=parents,
+                                    **attr_dict)
