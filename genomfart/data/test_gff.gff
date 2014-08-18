@@ -1,0 +1,100 @@
+##gff-version 3
+Pt	.	repeat_region	320	1262	.	+	.	Name=Os4_05_6L;class=LTR;repeat_consensus=N;type=LTRs
+Pt	.	repeat_region	3550	3560	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	3683	3696	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	3764	3775	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	4106	4116	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	4394	4403	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	4733	4740	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	4795	4826	.	?	.	Name=trf;class=trf;repeat_consensus=TCTGTCTATAATGCAA;type=Tandem repeats
+Pt	.	repeat_region	6092	6125	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	6359	6372	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	6508	6534	.	?	.	Name=trf;class=trf;repeat_consensus=TTCAAAACACATA;type=Tandem repeats
+Pt	.	repeat_region	7430	7440	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	7647	7677	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	7751	7758	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	7896	7951	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	8012	8101	.	+	.	Name=Os4_05_6L;class=LTR;repeat_consensus=N;type=LTRs
+Pt	.	repeat_region	8247	8254	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	8372	8382	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	8386	8395	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	8697	8727	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	ensembl	gene	3363	5604	.	-	.	ID=gene:GRMZM5G811749;biotype=protein_coding;description=30S ribosomal protein S16%2C chloroplastic  [Source:UniProtKB/Swiss-Prot%3BAcc:P27723];external_name=RPS16;logic_name=genebuilder
+Pt	ensembl	transcript	3363	5604	.	-	.	ID=transcript:GRMZM5G811749_T01;Parent=gene:GRMZM5G811749;biotype=protein_coding;description=est|oprotein;external_name=RPS16-201;logic_name=genebuilder
+Pt	.	exon	3363	4708	.	-	.	Name=GRMZM5G811749_E02;Parent=transcript:GRMZM5G811749_T01;constitutive=1;ensembl_end_phase=-1;ensembl_phase=1;rank=2
+Pt	.	three_prime_UTR	3363	4490	.	-	.	Parent=GRMZM5G811749_T01
+Pt	.	CDS	4491	4708	.	-	0	ID=CDS:GRMZM5G811749_P01;Parent=transcript:GRMZM5G811749_T01;rank=2
+Pt	.	CDS	5565	5604	.	-	0	ID=CDS:GRMZM5G811749_P01;Parent=transcript:GRMZM5G811749_T01;rank=1
+Pt	.	exon	5565	5604	.	-	.	Name=GRMZM5G811749_E01;Parent=transcript:GRMZM5G811749_T01;constitutive=1;ensembl_end_phase=1;ensembl_phase=0;rank=1
+Pt	ensembl	gene	1674	3308	.	-	.	ID=gene:GRMZM5G836994;biotype=protein_coding;description=Maturase K  [Source:UniProtKB/Swiss-Prot%3BAcc:P48190];external_name=MATK;logic_name=genebuilder
+Pt	ensembl	transcript	1674	3308	.	-	.	ID=transcript:GRMZM5G836994_T01;Parent=gene:GRMZM5G836994;biotype=protein_coding;description=protein;external_name=MATK-201;logic_name=genebuilder
+Pt	.	CDS	1674	3308	.	-	0	ID=CDS:GRMZM5G836994_P01;Parent=transcript:GRMZM5G836994_T01;rank=1
+Pt	.	exon	1674	3308	.	-	.	Name=GRMZM5G836994_E01;Parent=transcript:GRMZM5G836994_T01;constitutive=1;ensembl_end_phase=0;ensembl_phase=-1;rank=1
+Pt	ensembl	gene	6392	12986	.	+	.	ID=gene:GRMZM5G856777;biotype=protein_coding;description=Photosystem II CP43 chlorophyll apoprotein  [Source:UniProtKB/Swiss-Prot%3BAcc:P48187];external_name=PSBC;logic_name=genebuilder
+Pt	ensembl	transcript	6392	12986	.	+	.	ID=transcript:GRMZM5G856777_T01;Parent=gene:GRMZM5G856777;biotype=protein_coding;description=est|mrna|protein;external_name=PSBC-201;logic_name=genebuilder
+Pt	.	exon	6392	12986	.	+	.	Name=GRMZM5G856777_E01;Parent=transcript:GRMZM5G856777_T01;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;rank=1
+Pt	.	five_prime_UTR	6392	10091	.	+	.	Parent=GRMZM5G856777_T01
+Pt	.	CDS	10092	11513	.	+	0	ID=CDS:GRMZM5G856777_P01;Parent=transcript:GRMZM5G856777_T01;rank=1
+Pt	.	three_prime_UTR	11514	12986	.	+	.	Parent=GRMZM5G856777_T01
+Pt	.	repeat_region	10664	10674	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	11220	11271	.	+	.	Name=trep2200;class=LTR/Copia;repeat_consensus=N;type=LTRs
+Pt	.	repeat_region	11666	11756	.	+	.	Name=Os4_05_6L;class=LTR;repeat_consensus=N;type=LTRs
+Pt	.	repeat_region	12409	12459	.	?	.	Name=trf;class=trf;repeat_consensus=ACGGTCGACCCAGACATAG;type=Tandem repeats
+Pt	.	repeat_region	12638	12676	.	?	.	Name=trf;class=trf;repeat_consensus=TTAATATTATAGTTTATAT;type=Tandem repeats
+Pt	.	repeat_region	12638	12721	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	12645	12707	.	?	.	Name=trf;class=trf;repeat_consensus=TATATTTATATTTAATATTATA;type=Tandem repeats
+Pt	.	repeat_region	12661	12727	.	?	.	Name=trf;class=trf;repeat_consensus=TATTATAGTAAAT;type=Tandem repeats
+Pt	.	repeat_region	12745	12781	.	?	.	Name=trf;class=trf;repeat_consensus=TATTAAATGAATATTAAA;type=Tandem repeats
+Pt	.	repeat_region	12844	12852	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	12969	12986	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	13000	13008	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	13002	13072	.	-	.	Name=Os4_05_6L;class=LTR;repeat_consensus=N;type=LTRs
+Pt	.	repeat_region	13083	13244	.	-	.	Name=Os4_05_6L;class=LTR;repeat_consensus=N;type=LTRs
+Pt	.	repeat_region	13241	13270	.	-	.	Name=Os4_05_6L;class=LTR;repeat_consensus=N;type=LTRs
+Pt	.	repeat_region	13721	13745	.	?	.	Name=trf;class=trf;repeat_consensus=ATCGGAATACTT;type=Tandem repeats
+Pt	.	repeat_region	14922	14929	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	15348	15356	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	15462	15469	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	15683	15707	.	?	.	Name=trf;class=trf;repeat_consensus=ATTTTCTTA;type=Tandem repeats
+Pt	.	repeat_region	15774	15828	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	15787	15836	.	?	.	Name=trf;class=trf;repeat_consensus=ATATATACATATAATATGTACATTA;type=Tandem repeats
+Pt	.	repeat_region	15787	15836	.	?	.	Name=trf;class=trf;repeat_consensus=ATATATACATTA;type=Tandem repeats
+Pt	.	repeat_region	15885	15961	.	+	.	Name=Os4_05_6L;class=LTR;repeat_consensus=N;type=LTRs
+Pt	.	repeat_region	16068	16082	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	16161	16169	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	16336	16343	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	16740	16747	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	17192	17203	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	17296	17303	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	18620	18648	.	?	.	Name=trf;class=trf;repeat_consensus=AGTAAAAGAAAAAA;type=Tandem repeats
+Pt	.	repeat_region	18623	18648	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	18704	18718	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	ensembl	gene	12720	15097	.	-	.	ID=gene:GRMZM5G813608;biotype=protein_coding;description=Uncharacterized protein ycf70  [Source:UniProtKB/Swiss-Prot%3BAcc:Q33301];external_name=YCF70;logic_name=genebuilder
+Pt	ensembl	transcript	12720	15097	.	-	.	ID=transcript:GRMZM5G813608_T01;Parent=gene:GRMZM5G813608;biotype=protein_coding;description=est|mrna;external_name=YCF70-201;logic_name=genebuilder
+Pt	.	exon	12720	15097	.	-	.	Name=GRMZM5G813608_E01;Parent=transcript:GRMZM5G813608_T01;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;rank=1
+Pt	.	three_prime_UTR	12720	14497	.	-	.	Parent=GRMZM5G813608_T01
+Pt	.	CDS	14498	14707	.	-	0	ID=CDS:GRMZM5G813608_P01;Parent=transcript:GRMZM5G813608_T01;rank=1
+Pt	.	five_prime_UTR	14708	15097	.	-	.	Parent=GRMZM5G813608_T01
+Pt	.	repeat_region	18800	18831	.	?	.	Name=trf;class=trf;repeat_consensus=GTCTAATTTTCTTAT;type=Tandem repeats
+Pt	.	repeat_region	19426	19453	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	19693	19757	.	?	.	Name=trf;class=trf;repeat_consensus=TAAGATGTACGATAAAGTGTATGTAG;type=Tandem repeats
+Pt	.	repeat_region	19710	19766	.	?	.	Name=trf;class=trf;repeat_consensus=ATGTAGTAAGATGTACGATAAAGAAA;type=Tandem repeats
+Pt	.	repeat_region	19727	19772	.	?	.	Name=trf;class=trf;repeat_consensus=ATAAAATGTATGATAA;type=Tandem repeats
+Pt	.	repeat_region	20241	20276	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	20503	20597	.	?	.	Name=trf;class=trf;repeat_consensus=ATTAACTATAATATAATAAAATAAAAATATAATAAAATA;type=Tandem repeats
+Pt	.	repeat_region	20503	20598	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	20509	20598	.	?	.	Name=trf;class=trf;repeat_consensus=TATAA;type=Tandem repeats
+Pt	.	repeat_region	20509	20598	.	?	.	Name=trf;class=trf;repeat_consensus=TATAATAAAATAAAACTAGAATATAATAATATAATAAATATAA;type=Tandem repeats
+Pt	.	repeat_region	20510	20601	.	?	.	Name=trf;class=trf;repeat_consensus=ATAATATA;type=Tandem repeats
+Pt	.	repeat_region	20824	20834	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	21164	21322	.	+	.	Name=ORSiTRTA00000003;class=Other/Simple;repeat_consensus=N;type=Other repeats
+Pt	.	repeat_region	22602	22816	.	+	.	Name=Os7_01_1L;class=LTR;repeat_consensus=N;type=LTRs
+Pt	.	repeat_region	22865	22877	.	?	.	Name=dust;class=dust;repeat_consensus=N;type=Dust
+Pt	.	repeat_region	24631	24756	.	+	.	Name=ORSiTRTA00000003;class=Other/Simple;repeat_consensus=N;type=Other repeats
+Pt	.	repeat_region	26920	26960	.	?	.	Name=trf;class=trf;repeat_consensus=ATTGTCGAATCCTACTCAGCA;type=Tandem repeats
+Pt	ensembl	gene	21468	24695	.	+	.	ID=gene:GRMZM5G877454;biotype=protein_coding;description=DNA-directed RNA polymerase subunit beta  [Source:UniProtKB/Swiss-Prot%3BAcc:P16023];external_name=RPOB;logic_name=genebuilder
+Pt	ensembl	transcript	21468	24695	.	+	.	ID=transcript:GRMZM5G877454_T01;Parent=gene:GRMZM5G877454;biotype=protein_coding;description=oprotein|protein;external_name=RPOB-201;logic_name=genebuilder
+Pt	.	CDS	21468	24695	.	+	0	ID=CDS:GRMZM5G877454_P01;Parent=transcript:GRMZM5G877454_T01;rank=1
+Pt	.	exon	21468	24695	.	+	.	Name=GRMZM5G877454_E01;Parent=transcript:GRMZM5G877454_T01;constitutive=1;ensembl_end_phase=-1;ensembl_phase=0;rank=1
+Pt	ensembl	gene	26983	31566	.	+	.	ID=gene:GRMZM5G892247;biotype=protein_coding;description=DNA-directed RNA polymerase subunit beta''  [Source:UniProtKB/Swiss-Prot%3BAcc:P16025];external_name=RPOC2;logic_name=genebuilder
+Pt	ensembl	transcript	26983	31566	.	+	.	ID=transcript:GRMZM5G892247_T01;Parent=gene:GRMZM5G892247;biotype=protein_coding;description=protein;external_name=RPOC2-201;logic_name=genebuilder
