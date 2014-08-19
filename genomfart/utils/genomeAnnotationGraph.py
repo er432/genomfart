@@ -116,6 +116,33 @@ class genomeAnnotationGraph(object):
         """
         checkRange = Range.closed(start, end)
         return self.bucketmaps[seqid].get(checkRange)
+    def get_overlapping_element_ids_of_type(self, seqid, start, end, element_type):
+        """ Gets the ids for any elements that overlap a given range and are
+        of a given type
+
+        Parameters
+        ----------
+        seqid : str
+            The name of the coordinate system to check
+        start : int
+            The start of the range to check (inclusive, 1-based)
+        end : int
+            The end of the range to check (inclusive, 1-based)
+        element_type : str
+            The element type that you want (e.g. 'gene', 'mRNA')
+
+        Raises
+        ------
+        KeyError
+            If the seqid is not present
+
+        Returns
+        -------
+        Set of ids for elements overlapping the range that are of the
+        element type
+        """
+        all_overlaps = self.get_overlapping_element_ids(seqid, start, end)
+        return set([x for x in all_overlaps if self.graph.node[x]['type'] == element_type])
     def get_element_info(self, element_id):
         """ Gets information on a particular element
 

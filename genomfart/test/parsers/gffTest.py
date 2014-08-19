@@ -23,6 +23,14 @@ class gff_parserTest(unittest.TestCase):
         self.assertTrue('transcript:GRMZM5G836994_T01' in elements)
         self.assertFalse('CDS:GRMZM5G811749_P01' in elements)
         self.assertTrue('CDS:GRMZM5G836994_P01' in elements)
+    def test_get_overlapping_element_ids_of_type(self):
+        if debug: print("Testing get_overlapping_element_ids_of_type")
+        elements = self.parser.get_overlapping_element_ids_of_type('Pt',100,4000,'repeat_region')
+        self.assertEqual(len(elements), 4)
+        self.assertTrue('repeat_region:Pt_320_1262:+' in elements)
+        self.assertTrue('repeat_region:Pt_3550_3560:?' in elements)
+        self.assertTrue('repeat_region:Pt_3683_3696:?' in elements)
+        self.assertTrue('repeat_region:Pt_3764_3775:?' in elements)        
     def test_get_element_info(self):
         if debug: print("Testing get_element_info")
         gene_info = self.parser.get_element_info('gene:GRMZM5G811749')
