@@ -114,8 +114,13 @@ class genomeAnnotationGraph(object):
         -------
         Set of ids for elements overlapping the range
         """
+        if seqid not in self.bucketmaps:
+            raise KeyError("%s not present" % seqid)
         checkRange = Range.closed(start, end)
-        return self.bucketmaps[seqid].get(checkRange)
+        try:
+            return self.bucketmaps[seqid].get(checkRange)
+        except KeyError:
+            return set()
     def get_overlapping_element_ids_of_type(self, seqid, start, end, element_type):
         """ Gets the ids for any elements that overlap a given range and are
         of a given type

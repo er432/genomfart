@@ -23,6 +23,9 @@ class gff_parserTest(unittest.TestCase):
         self.assertTrue('transcript:GRMZM5G836994_T01' in elements)
         self.assertFalse('CDS:GRMZM5G811749_P01' in elements)
         self.assertTrue('CDS:GRMZM5G836994_P01' in elements)
+        # Test with no overlapping elements
+        elements = self.parser.get_overlapping_element_ids('Pt',1300,1310)
+        self.assertEqual(len(elements),0)
     def test_get_overlapping_element_ids_of_type(self):
         if debug: print("Testing get_overlapping_element_ids_of_type")
         elements = self.parser.get_overlapping_element_ids_of_type('Pt',100,4000,'repeat_region')
