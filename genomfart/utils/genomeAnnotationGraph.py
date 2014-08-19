@@ -74,6 +74,25 @@ class genomeAnnotationGraph(object):
             self.graph.add_edge(parent, element_id)
         for child in children:
             self.graph.add_edge(element_id, child)
+    def add_node_annotations(self, element_id, **annots):
+        """ Adds annotations to all annotation dictionaries under a node.
+        Note that if the key for an annotation is the same as a previously
+        existing one, that annotation will be overwritten
+
+        Parameters
+        ----------
+        element_id : hashable
+            The id of the element you're adding.
+        annots : keyword arguments
+            The elements you want to add
+
+        Examples
+        --------
+
+        >>> my_genome.add_node_annotations('myNode1', expression1 = 0.2, expression2 = 10.)
+        """
+        for attr_dict in self.graph.node[element_id]['attributes']:
+            attr_dict.update(annots)
     def get_overlapping_element_ids(self, seqid, start, end):
         """ Gets the ids for any elements that overlap a given range
 
