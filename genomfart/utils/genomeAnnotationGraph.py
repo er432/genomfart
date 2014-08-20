@@ -74,6 +74,25 @@ class genomeAnnotationGraph(object):
             self.graph.add_edge(parent, element_id)
         for child in children:
             self.graph.add_edge(element_id, child)
+    def add_node_annotations(self, element_id, **annots):
+        """ Adds annotations to all annotation dictionaries under a node.
+        Note that if the key for an annotation is the same as a previously
+        existing one, that annotation will be overwritten
+
+        Parameters
+        ----------
+        element_id : hashable
+            The id of the element you're adding.
+        annots : keyword arguments
+            The elements you want to add
+
+        Examples
+        --------
+
+        >>> my_genome.add_node_annotations('myNode1', expression1 = 0.2, expression2 = 10.)
+        """
+        for attr_dict in self.graph.node[element_id]['attributes']:
+            attr_dict.update(annots)
     def get_overlapping_element_ids(self, seqid, start, end):
         """ Gets the ids for any elements that overlap a given range
 
@@ -95,8 +114,40 @@ class genomeAnnotationGraph(object):
         -------
         Set of ids for elements overlapping the range
         """
+        if seqid not in self.bucketmaps:
+            raise KeyError("%s not present" % seqid)
         checkRange = Range.closed(start, end)
-        return self.bucketmaps[seqid].get(checkRange)
+        try:
+            return self.bucketmaps[seqid].get(checkRange)
+        except KeyError:
+            return set()
+    def get_overlapping_element_ids_of_type(self, seqid, start, end, element_type):
+        """ Gets the ids for any elements that overlap a given range and are
+        of a given type
+
+        Parameters
+        ----------
+        seqid : str
+            The name of the coordinate system to check
+        start : int
+            The start of the range to check (inclusive, 1-based)
+        end : int
+            The end of the range to check (inclusive, 1-based)
+        element_type : str
+            The element type that you want (e.g. 'gene', 'mRNA')
+
+        Raises
+        ------
+        KeyError
+            If the seqid is not present
+
+        Returns
+        -------
+        Set of ids for elements overlapping the range that are of the
+        element type
+        """
+        all_overlaps = self.get_overlapping_element_ids(seqid, start, end)
+        return set([x for x in all_overlaps if self.graph.node[x]['type'] == element_type])
     def get_element_info(self, element_id):
         """ Gets information on a particular element
 

@@ -1,5 +1,9 @@
 import re
+import sys
 import gzip
+
+if sys.version_info[0] > 2:
+    xrange = range
 
 ## Define some regular expressions that can be used to recognize certain data types
 # Integers
@@ -324,5 +328,61 @@ class VCF_parser:
                     info_dict[key] = None
             yield chrom, pos, alleles, info_dict
             self.current_line += 1
-                
+    @staticmethod
+    def get_affected_ref_bases(vcf_pos, ref_allele, alt_allele):
+        """ Gets the reference positions that are modified through
+        the alternative allele, either through substitution or deletion
+        
+        Parameters
+        ----------
+        vcf_pos : int
+            The position given for this variant in the VCF file
+        ref_allele : str
+            The reference allele given by the VCF file
+        alt_allele : str
+            The alternative allele given by the VCF file
+
+        Returns
+        -------
+        Set of positions that are either substituted or deleted in the
+        alternative alleles
+
+        Examples
+        --------
+        >>> VCF_parser.get_affected_ref_bases(20,'C','T')
+        set([20])
+        >>> VCF_parser.get_affected_ref_bases(20,'C','CTAG')
+        set([])
+        >>> VCF_parser.get_affected_ref_bases(20,'TCG','T')
+        set([21, 22])
+        >>> VCF_parser.get_affected_ref_bases(20,'TCGCG','TCG')
+        set([24, 23])
+        >>> VCF_parser.get_affected_ref_bases(20,'TCGCG','TCGCGCG')
+        set([])
+        """
+        bases = frozenset(['A','C','G','T'])
+        affected_set = set()
+        if len(ref_allele) == 1 and len(alt_allele) == 1:
+            if alt_allele not in bases:
+                raise TypeError("%s is not a valid allele" % alt_allele)
+            elif ref_allele != alt_allele:
+                return set([vcf_pos])
+            else:
+                return set()
+        elif len(ref_allele) >= len(alt_allele):
+            for i in xrange(len(ref_allele)):
+                if i < len(alt_allele):
+                    # Adding substituted bases
+                    if ref_allele[i] != alt_allele[i]:
+                        affected_set.add(i+vcf_pos)
+                else:
+                    # Adding deleted bases
+                    affected_set.add(i+vcf_pos)
+        elif len(ref_allele) < len(alt_allele):
+            for i in xrange(len(ref_allele)):
+                # Adding substituted bases
+                if ref_allele[i] != alt_allele[i]:
+                    affected_set.add(i+vcf_pos)
+        return affected_set
+            
         

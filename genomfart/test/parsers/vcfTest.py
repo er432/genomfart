@@ -58,6 +58,13 @@ class vcfTest(unittest.TestCase):
         self.assertEqual(pos, 13)
         self.assertEqual(info['GN'],(2,1,0))
         self.assertEqual(info['AQ'],(36,33))
+    def test_get_affected_ref_bases(self):
+        if debug: print("Testing get_affected_ref_bases")
+        self.assertEqual(VCF_parser.get_affected_ref_bases(20,'C','T'),set([20]))
+        self.assertEqual(VCF_parser.get_affected_ref_bases(20,'C','CTAG'), set([]))
+        self.assertEqual(VCF_parser.get_affected_ref_bases(20,'TCG','T'), set([21,22]))
+        self.assertEqual(VCF_parser.get_affected_ref_bases(20,'TCGCG','TCG'),set([24,23]))
+        self.assertEqual(VCF_parser.get_affected_ref_bases(20,'TCGCG','TCGCGCG'),set([]))
 if __name__ == "__main__":
     debug = True
     unittest.main(exit = False)
