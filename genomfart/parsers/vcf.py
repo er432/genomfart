@@ -187,7 +187,8 @@ class VCF_parser:
                 yield chrom,pos,alleles,geno_dict
             self.current_line += 1
     def parse_select_geno_generic(self, genos, info_dict = False, use_chrom = None,
-                                   start = None, end = None):
+                                   start = None, end = None, filter_excludes = None,
+                                   filter_requires = None):
         """
         Iterates through the VCF file, getting selected genotypes at each position.
         This makes no assumptions about the format of the sample information for each genotype
@@ -205,12 +206,24 @@ class VCF_parser:
             Optional place to start the scan
         end : int, optional
             Optional place to end the scan
+        filter_excludes : set, optional
+            Filter tags that should exclude the locus from being returned
+        filter_requires : set, optional
+            Filter tags that should be required for a locus to be returned
         
         Returns
         -------
         A generator that generates tuples of chrom,pos,(ref,alt1,alt2,...),{sample->{prefix->val}),
                                             <info_dict if desired>}
         """
+        if filter_excludes is None:
+            filter_excludes = frozenset()
+        else:
+            filter_excludes = frozenset(filter_excludes)
+        if filter_requires is None:
+            filter_requires = frozenset()
+        else:
+            filter_requires = frozenset(filter_requires)
         # Go to the start of the genotyping part of the file
         file_seek_pos = self.file_handle.seek(self.start_genotype_byte,0)
         # Go through the file
@@ -218,6 +231,10 @@ class VCF_parser:
             line = line.strip().split('\t')
             if len(line) < 2:
                 continue
+            # Get filter tags and filter if necessary
+            filt = line[self.header_dict['FILTER']].split(',')
+            if len(filter_excludes.intersection(filt)) > 0: continue
+            elif len(filter_requires.intersection(filt)) != len(filter_requires): continue            
             # Get chromosome and position
             chrom,pos = line[0],int(line[1])
             if (use_chrom is not None and chrom != use_chrom):
