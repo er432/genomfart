@@ -1,0 +1,5 @@
+numpy
+biopython
+networkx
+cachetools
+ranger
