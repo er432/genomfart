@@ -1,6 +1,7 @@
 import re
 import sys
 import gzip
+from Bio import pairwise2
 
 if sys.version_info[0] > 2:
     xrange = range
@@ -348,7 +349,10 @@ class VCF_parser:
     @staticmethod
     def get_affected_ref_bases(vcf_pos, ref_allele, alt_allele):
         """ Gets the reference positions that are modified through
-        the alternative allele, either through substitution or deletion
+        the alternative allele, either through substitution or deletion.
+        Note that this assumes that the first bases of the ref and alt
+        alleles line up and that there is, at most, one indel in the
+        alt_allele. 
         
         Parameters
         ----------
@@ -401,5 +405,197 @@ class VCF_parser:
                 if ref_allele[i] != alt_allele[i]:
                     affected_set.add(i+vcf_pos)
         return affected_set
-            
+    @staticmethod
+    def get_substituted_ref_bases(vcf_pos, ref_allele, alt_allele):
+        """ Gets the reference positions that are modified through
+        the alternative allele through substitution.
+        
+        Note that this assumes that the first bases of the ref and alt
+        alleles line up and that there is, at most, one indel in the
+        alt_allele. 
+        
+        Parameters
+        ----------
+        vcf_pos : int
+            The position given for this variant in the VCF file
+        ref_allele : str
+            The reference allele given by the VCF file
+        alt_allele : str
+            The alternative allele given by the VCF file
+
+        Returns
+        -------
+        Set of positions that are either substituted in the alternative allele
+
+        Examples
+        --------
+        >>> VCF_parser.get_substituted_ref_bases(20,'C','T')
+        set([20])
+        >>> VCF_parser.get_substituted_ref_bases(20,'C','CTAG')
+        set([])
+        >>> VCF_parser.get_substituted_ref_bases(20,'TCG','T')
+        set([])
+        >>> VCF_parser.get_substituted_ref_bases(20,'TCGCG','TCG')
+        set([])
+        >>> VCF_parser.get_substituted_ref_bases(20,'TCGCG','TCGGCGCG')
+        set([24, 23])
+        >>> VCF_parser.get_substituted_ref_bases(20,'TCGCG','TCGCGGCG')
+        set([])
+        """
+        bases = frozenset(['A','C','G','T'])
+        affected_set = set()
+        if len(ref_allele) == 1 and len(alt_allele) == 1:
+            if alt_allele not in bases:
+                raise TypeError("%s is not a valid allele" % alt_allele)
+            elif ref_allele != alt_allele:
+                return set([vcf_pos])
+            else:
+                return set()
+        elif len(ref_allele) >= len(alt_allele):
+            for i in xrange(len(alt_allele)):
+                # Adding substituted bases
+                if ref_allele[i] != alt_allele[i]:
+                    affected_set.add(i+vcf_pos)
+        elif len(ref_allele) < len(alt_allele):
+            for i in xrange(len(ref_allele)):
+                # Adding substituted bases
+                if ref_allele[i] != alt_allele[i]:
+                    affected_set.add(i+vcf_pos)
+        return affected_set
+    @staticmethod
+    def get_nw_aligned_alleles(ref_allele, alt_allele, match = 1, mismatch = -2,
+                               gapopen=-4, gapextend=-1):
+        """ Aligns alleles using the Needleman-Wunsch global alignment algorithm
+
+        Note that this will only return 1 of the alignments with the given score
+        Parameters. This also assumes that the VCF always has the first bases of the
+        allele aligned.
+        ----------
+
+        ref_allele : str
+            The reference allele given by the VCF file
+        alt_allele : str
+            The alternative allele given by the VCF file
+        match : number
+            Score for matching a base
+        mismatch : number
+            Score for mismatching a base
+        gapopen : number
+            Score for opening a gap
+        gapextend : number
+            Score for extending a gap
+
+        Returns
+        -------
+        aligned_seq1, aligned_seq2, score
+
+        Examples
+        --------
+        >>> VCF_parser.get_nw_aligned_alleles('C','T')
+        ('C', 'T', -2)
+        >>> VCF_parser.get_nw_aligned_alleles('C','CTAG')
+        ('C---', 'CTAG', -5)
+        >>> VCF_parser.get_nw_aligned_alleles('TCG','T')
+        ('TCG', 'T--', -4)
+        >>> VCF_parser.get_nw_aligned_alleles('TCGCG','TCG')
+        ('TCGCG', 'TC--G', -2.0)
+        >>> VCF_parser.get_nw_aligned_alleles('TCGCG','TCGGCGCG')
+        ('TCG---CG', 'TCGGCGCG', -1.0)
+        >>> VCF_parser.get_nw_aligned_alleles('TCGCG','TCGCGGCG')
+        ('TCGCG---', 'TCGCGGCG', -1.0)
+        """
+        aln_ref = None
+        aln_alt = None
+        score = 0.
+        if len(ref_allele) == 1:
+            aln_ref = ref_allele + '-'*(len(alt_allele)-len(ref_allele))
+            aln_alt = alt_allele
+            score = match if aln_ref[0] == aln_alt[0] else mismatch
+            if len(alt_allele) > len(ref_allele):
+                score += (gapopen + gapextend*(len(alt_allele)-len(ref_allele)-1))
+        elif len(alt_allele) == 1:
+            aln_ref = ref_allele
+            aln_alt = alt_allele + '-'*(len(ref_allele)-len(alt_allele))
+            score = match if aln_ref[0] == aln_alt[0] else mismatch
+            if len(ref_allele) > len(alt_allele):
+                score += (gapopen + gapextend*(len(ref_allele)-len(alt_allele)-1))
+        else:
+            alignments = pairwise2.align.globalms(ref_allele[1:], alt_allele[1:], match, mismatch,
+                                                  gapopen, gapextend)
+            aln_ref, aln_alt, score = alignments[0][0], alignments[0][1], alignments[0][2]
+            aln_ref = ref_allele[0] + aln_ref
+            aln_alt = alt_allele[0] + aln_alt
+            score += (match if aln_ref[0] == aln_alt[0] else mismatch)
+        return aln_ref, aln_alt, score
+    @staticmethod
+    def get_substituted_ref_bases_nw(vcf_pos, ref_allele, alt_allele, match = 1, mismatch = -2,
+                               gapopen=-4, gapextend=-1):
+        """ Gets the reference positions that are modified through
+        the alternative allele through substitution. This is accomplished by
+        first running a Needleman-Wunsch alignment of the 2 alleles and then
+        finding the substitutions
+        
+        Note that this assumes that the first bases of the ref and alt
+        alleles line up
+        
+        Parameters
+        ----------
+        vcf_pos : int
+            The position given for this variant in the VCF file
+        ref_allele : str
+            The reference allele given by the VCF file
+        alt_allele : str
+            The alternative allele given by the VCF file
+        match : number
+            Score for matching a base
+        mismatch : number
+            Score for mismatching a base
+        gapopen : number
+            Score for opening a gap
+        gapextend : number
+            Score for extending a gap            
+
+        Returns
+        -------
+        Set of positions that are either substituted in the alternative allele
+
+        Examples
+        --------
+        >>> VCF_parser.get_substituted_ref_bases_nw(20,'C','T')
+        set([20])
+        >>> VCF_parser.get_substituted_ref_bases_nw(20,'C','CTAG')
+        set([])
+        >>> VCF_parser.get_substituted_ref_bases_nw(20,'TCG','T')
+        set([])
+        >>> VCF_parser.get_substituted_ref_bases_nw(20,'TCGCG','TCG')
+        set([])
+        >>> VCF_parser.get_substituted_ref_bases_nw(20,'TCGCG','TCGGCGCG')
+        set([])
+        >>> VCF_parser.get_substituted_ref_bases_nw(20,'TCGCG','TCGCGGCG')
+        set([])
+        """
+        bases = frozenset(['A','C','G','T'])
+        affected_set = set()
+        if len(ref_allele) == 1 and len(alt_allele) == 1:
+            if alt_allele not in bases:
+                raise TypeError("%s is not a valid allele" % alt_allele)
+            elif ref_allele != alt_allele:
+                return set([vcf_pos])
+            else:
+                return set()
+        else:
+            # Get NW alignment
+            aln = VCF_parser.get_nw_aligned_alleles(ref_allele, alt_allele, match=match,
+                                                    mismatch=mismatch, gapopen=gapopen,
+                                                    gapextend=gapextend)
+            add_num = 0
+            for i, ref_base in enumerate(aln[0]):
+                if ref_base == '-':
+                    add_num += 1
+                    continue
+                elif aln[1][i] == '-':
+                    continue
+                elif ref_base != aln[1][i]:
+                    affected_set.add(vcf_pos+i+add_num)
+        return affected_set            
         
