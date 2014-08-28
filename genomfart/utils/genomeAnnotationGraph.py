@@ -74,6 +74,93 @@ class genomeAnnotationGraph(object):
             self.graph.add_edge(parent, element_id)
         for child in children:
             self.graph.add_edge(element_id, child)
+    def get_aa_indices(self, seqid, pos, cds_type = 'CDS'):
+        """ Gets the indices (base-1) of the amino acid position in any
+        CDS overlapping it
+
+        Parameters
+        ----------
+        seqid : str
+            The name of the coordinate system to check
+        pos : int
+            The position to check (1-based)
+        cds_type : str, optional
+            The element type containing the CDS ranges
+
+        Returns
+        -------
+        Dictionary of CDS_ID -> AA position in protein (1-based)
+        """
+        return_dict = {}
+        # Get CDS position(s)
+        cds_inds = self.get_cds_indices(seqid, pos, cds_type)
+        for k,v in cds_inds.items():
+            return_dict[k] = int((v-1)/3)+1
+        return return_dict
+    def get_cds_indices(self, seqid, pos, cds_type='CDS'):
+        """ Gets the indices (base-1) of the nucleotide position in any
+        CDS overlapping it
+
+        Parameters
+        ----------
+        seqid : str
+            The name of the coordinate system to check
+        pos : int
+            The position to check (1-based)
+        cds_type : str, optional
+            The element type containing the CDS ranges
+
+        Returns
+        -------
+        Dictionary of CDS_ID -> position in CDS (1-based)
+        """
+        return_dict = {}
+        # Get CDS overlapping the position
+        cds_ids = self.get_overlapping_element_ids_of_type(seqid, pos,
+                                                           pos, cds_type)
+        # Go through CDS getting the position
+        for cds_id in cds_ids:
+            add_value = 0
+            cds_ranges = sorted(self.graph.node[cds_id]['Ranges'],
+                                key = lambda x: x.lowerEndpoint() if \
+                                self.graph.node[cds_id]['strand'] == '+' else \
+                                -x.lowerEndpoint())
+            for cds_range in cds_ranges:
+                if cds_range.contains(pos):
+                    if self.graph.node[cds_id]['strand'] == '+':
+                        return_dict[cds_id] = add_value + \
+                          (pos-cds_range.lowerEndpoint()+1)
+                        break
+                    elif self.graph.node[cds_id]['strand'] == '-':
+                        return_dict[cds_id] = add_value + \
+                          (cds_range.upperEndpoint()-pos+1)
+                        break
+                else:
+                    add_value += (cds_range.upperEndpoint()-cds_range.lowerEndpoint()+1)
+        return return_dict
+    def get_codon_position(self, seqid, pos, cds_type='CDS'):
+        """ Gets the indices (base-1) of the codon position (i.e. 1,2, or 3)
+        within any CDS 
+
+        Parameters
+        ----------
+        seqid : str
+            The name of the coordinate system to check
+        pos : int
+            The position to check (1-based)
+        cds_type : str, optional
+            The element type containing the CDS ranges
+
+        Returns
+        -------
+        Dictionary of CDS_ID -> codon position
+        """
+        return_dict = {}
+        # Get CDS position(s)
+        cds_inds = self.get_cds_indices(seqid, pos, cds_type)
+        for k,v in cds_inds.items():
+            return_dict[k] = ((v-1) % 3)+1
+        return return_dict        
     def add_node_annotations(self, element_id, **annots):
         """ Adds annotations to all annotation dictionaries under a node.
         Note that if the key for an annotation is the same as a previously

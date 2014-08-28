@@ -77,3 +77,4 @@ class gff_parser(genomeAnnotationGraph):
                 self.add_annotation(element_id, line[0], int(line[3]), int(line[4]),
                                     line[2], strand=line[6], parents=parents,
                                     **attr_dict)
+
