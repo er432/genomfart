@@ -1,5 +1,7 @@
 import gzip
 import re
+import numpy as np
+from Ranger import RangeSet
 from cachetools import LRUCache
 from bisect import bisect_left
 
@@ -241,4 +243,56 @@ class BigDataFrame(object):
         The zero-based index of the current row
         """
         return self.current_line_ind
-        
+    def make_numpy_array(self, rows = None, cols=None):
+        """ Create a 2-dimensional numpy array of data in the data frame.
+
+        Parameters
+        ----------
+        rows : list of ints or Ranger.RangeSet
+           Either a list of rows to include in the array or a RangeSet
+           that includes all row indices to be included in the RangeSet. If None,
+           all rows will be included
+        cols : list of ints or Ranger.RangeSet
+           Either a list of columns to include in the array or a RangeSet
+           that includes all columns to be included in the RangeSet. If None,
+           all columns will be included
+
+        Returns
+        -------
+        A numpy array containing the data
+        """
+        ## Create function that deterimines whether the row RangeSet
+        # or list contains a given row index
+        row_contain_func = lambda x: True
+        if rows and any(list(map(lambda x: isinstance(rows, x), (set, frozenset,
+                                                                 list, tuple)))):
+            rows = frozenset(rows)
+            row_contain_func = lambda x: x in rows
+        elif rows and isinstance(rows, RangeSet):
+            row_contain_func = lambda x: rows.contains(x)
+        elif rows:
+            raise TypeError("Rows must be specified as a set, tuple, list, or RangeSet")
+        # Make a list of the columns to get
+        if cols is None:
+            cols = range(len(self[0]))
+        elif isinstance(cols, RangeSet):
+            colsList = []
+            for subRange in cols:
+                rangeStart = subRange.lowerEndpoint() if subRange.isLowerBoundClosed() \
+                  else subRange.lowerEndpoint()+1
+                rangeEnd = subRange.upperEndpoint() if not subRange.isUpperBoundClosed() \
+                  else subRange.upperEndpoint()+1
+                colsList += range(rangeStart, rangeEnd)
+            cols = colsList
+        elif not any(list(map(lambda x: isinstance(cols, x), (list, tuple)))):
+            raise TypeError("Cols must be specified as a RangeSet, tuple, or list")
+        # Instantiate a list to holds to rows of the resulting array
+        returnArr = []
+        # Iterate through the rows, adding to the array
+        for i,row in enumerate(self):
+            if row_contain_func(i):
+                returnArr.append(list(map(lambda x: self[i,x], cols)))
+            else:
+                continue
+        # Return the array
+        return np.array(returnArr)

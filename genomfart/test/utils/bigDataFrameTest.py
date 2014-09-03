@@ -1,6 +1,8 @@
 import unittest
 from genomfart.utils.bigDataFrame import BigDataFrame
 from genomfart.data.data_constants import FRAME_TEST_FILE
+from Ranger import RangeSet, Range
+import numpy as np
 
 debug = False
 
@@ -30,6 +32,26 @@ class bigDataFrameTest(unittest.TestCase):
                 pass
             except StopIteration:
                 break
+    def test_make_numpy_array(self):
+        if debug: print("Testing make_numpy_array")
+        arr = self.frame.make_numpy_array(rows=[1,2,4,5],cols=['pos','cm'])
+        self.assertEqual(arr.shape,(4,2))
+        self.assertEqual(arr[0,0],27140818)
+        self.assertAlmostEqual(arr[2,1],43.47540355575215)
+        arr2 = self.frame.make_numpy_array(rows=[1,2,4,5],cols=[2,3])
+        self.assertTrue(np.allclose(arr,arr2))
+        arr2 = self.frame.make_numpy_array(rows=[1,2,4,5],cols=RangeSet(
+            ranges=[Range.closed(2,3)]
+        ))
+        self.assertTrue(np.allclose(arr,arr2))
+        arr2 = self.frame.make_numpy_array(rows=[1,2,4,5],cols=RangeSet(
+            ranges=[Range.closedOpen(2,3), Range.closedOpen(3,4)]
+        ))
+        self.assertTrue(np.allclose(arr,arr2))
+        arr2 = self.frame.make_numpy_array(rows=RangeSet(
+            ranges = [Range.closed(1,2), Range.closed(4,5)]
+        ),cols=[2,3])
+        self.assertTrue(np.allclose(arr,arr2))
 if __name__ == '__main__':
-    debug = False
+    debug = True
     unittest.main(exit = False)    
