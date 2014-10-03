@@ -32,6 +32,18 @@ class bigDataFrameTest(unittest.TestCase):
                 pass
             except StopIteration:
                 break
+    def test_iterrow(self):
+        if debug: print("Testing iterrows")
+        row_iter = self.frame.iterrows(cache=False)
+        row = next(row_iter)
+        self.assertEqual(row['pos'],146650283)
+        row = next(row_iter)
+        self.assertEqual(row['pos'],27140818)
+        for row in row_iter:
+            try:
+                pass
+            except StopIteration:
+                break            
     def test_make_numpy_array(self):
         if debug: print("Testing make_numpy_array")
         arr = self.frame.make_numpy_array(rows=[1,2,4,5],cols=['pos','cm'])

@@ -2,7 +2,7 @@ import gzip
 import re
 import numpy as np
 from Ranger import RangeSet
-from cachetools import LRUCache
+from genomfart.utils.caching import LRUcache
 from bisect import bisect_left
 
 ## Compile regular expressions
@@ -54,7 +54,7 @@ class BigDataFrame(object):
         # values
         self.rowLabels = {}
         ## LRU cache holding rows of data, with row indices as keys
-        self.data = LRUCache(maxsize = maxsize)
+        self.data = LRUcache(self._fetch_from_cache, maxsize = maxsize)
         ## Function used to convert to correct type
         self.type_func = lambda x: x[1]
         self.type_dict = {}
@@ -158,7 +158,8 @@ class BigDataFrame(object):
         else:
             raise TypeError("Row index must be integer")
     def __iter__(self):
-        """ Iterates through the rows of the data frame
+        """ Iterates through the rows of the data frame. Will cache as it
+        moves through the rows
 
         Returns
         -------
@@ -243,6 +244,32 @@ class BigDataFrame(object):
         The zero-based index of the current row
         """
         return self.current_line_ind
+    def iterrows(self, cache=False):
+        """ Iterates through rows in the dataframe, with the option of whether
+        or not to cache rows while moving through
+
+        Parameters
+        ----------
+        cache : boolean
+            Whether or not to cache rows while iterating. Choosing False
+            will result in a performance increase while iterrating, but O(1) access
+            to iterrated rows will not be available afterward
+
+        Returns
+        -------
+        Generator of dictionaries for each row        
+        """
+        self.current_line_ind = self._goto_closest_line(0)
+        header = True if len(self.colLabels) > 0 else False
+        for line in self.handle:
+            row = tuple(map(self.type_func, enumerate(self.split_func(line.strip()))))
+            if cache:
+                self.data[self.current_line_ind] = row
+            if header:
+                yield dict((k,row[v]) for k,v in self.colLabels.items())
+            else:
+                yield dict((i,x) for i,x in enumerate(row))            
+            self.current_line_ind += 1
     def make_numpy_array(self, rows = None, cols=None):
         """ Create a 2-dimensional numpy array of data in the data frame.
 

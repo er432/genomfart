@@ -12,6 +12,14 @@ genomfart.utils.bigDataFrame module
     :undoc-members:
     :show-inheritance:
 
+genomfart.utils.caching module
+------------------------------
+
+.. automodule:: genomfart.utils.caching
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 genomfart.utils.genomeAnnotationGraph module
 --------------------------------------------
 
