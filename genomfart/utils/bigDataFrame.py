@@ -244,7 +244,7 @@ class BigDataFrame(object):
         The zero-based index of the current row
         """
         return self.current_line_ind
-    def iterrows(self, cache=False):
+    def iterrows(self, cache=False, colspec=None):
         """ Iterates through rows in the dataframe, with the option of whether
         or not to cache rows while moving through
 
@@ -254,6 +254,10 @@ class BigDataFrame(object):
             Whether or not to cache rows while iterating. Choosing False
             will result in a performance increase while iterrating, but O(1) access
             to iterrated rows will not be available afterward
+        colspec : iterable
+            Particular columns (index, or name if there is a header)
+            that should be included. If given, all other columns will be
+            discarded
 
         Returns
         -------
@@ -262,13 +266,23 @@ class BigDataFrame(object):
         self.current_line_ind = self._goto_closest_line(0)
         header = True if len(self.colLabels) > 0 else False
         for line in self.handle:
-            row = tuple(map(self.type_func, enumerate(self.split_func(line.strip()))))
-            if cache:
-                self.data[self.current_line_ind] = row
-            if header:
-                yield dict((k,row[v]) for k,v in self.colLabels.items())
+            if colspec:
+                row = self.split_func(line.strip())
+                if cache:
+                    self.data[self.current_line_ind] = tuple(map(self.type_func, enumerate(row)))
+                if header:
+                    yield dict((k, self.type_func((self.colLabels[k],row[self.colLabels[k]]))) for \
+                               k in colspec)
+                else:
+                    yield dict((i, self.type_func((i, row[i]))) for i in colspec)
             else:
-                yield dict((i,x) for i,x in enumerate(row))            
+                row = tuple(map(self.type_func, enumerate(self.split_func(line.strip()))))
+                if cache:
+                    self.data[self.current_line_ind] = row
+                if header:
+                    yield dict((k,row[v]) for k,v in self.colLabels.items())
+                else:
+                    yield dict((i,x) for i,x in enumerate(row))            
             self.current_line_ind += 1
     def make_numpy_array(self, rows = None, cols=None):
         """ Create a 2-dimensional numpy array of data in the data frame.

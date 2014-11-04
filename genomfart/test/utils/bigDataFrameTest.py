@@ -34,6 +34,7 @@ class bigDataFrameTest(unittest.TestCase):
                 break
     def test_iterrow(self):
         if debug: print("Testing iterrows")
+        # Regular row iterator
         row_iter = self.frame.iterrows(cache=False)
         row = next(row_iter)
         self.assertEqual(row['pos'],146650283)
@@ -43,7 +44,19 @@ class bigDataFrameTest(unittest.TestCase):
             try:
                 pass
             except StopIteration:
-                break            
+                break
+        # Column specific row iterator
+        row_iter = self.frame.iterrows(colspec=('chr','pos','allele'))
+        row = next(row_iter)
+        self.assertEqual(len(row),3)
+        self.assertEqual(row['pos'],146650283)
+        self.assertEqual(row['chr'],10)
+        self.assertEqual(row['allele'],'C/A_hm2')
+        row = next(row_iter)
+        self.assertEqual(len(row),3)
+        self.assertEqual(row['pos'],27140818)
+        self.assertEqual(row['chr'],10)
+        self.assertEqual(row['allele'],'A/T_hm2')
     def test_make_numpy_array(self):
         if debug: print("Testing make_numpy_array")
         arr = self.frame.make_numpy_array(rows=[1,2,4,5],cols=['pos','cm'])
