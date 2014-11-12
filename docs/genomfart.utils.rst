@@ -28,6 +28,14 @@ genomfart.utils.genomeAnnotationGraph module
     :undoc-members:
     :show-inheritance:
 
+genomfart.utils.polymorphism_formatter module
+---------------------------------------------
+
+.. automodule:: genomfart.utils.polymorphism_formatter
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
