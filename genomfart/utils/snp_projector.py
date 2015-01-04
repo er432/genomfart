@@ -127,6 +127,30 @@ class snp_projector:
         -------
         Generator non-reference allele count for each RIL, as an array of
         doubles
+
+        Examples
+        --------
+        >>> from genomfart.utils.snp_projector import snp_projector
+        >>> from genomfart.parsers.SNPdata import SNPdata
+        >>> import numpy as np
+        >>> import re
+        >>> import os
+        >>> chrom = 10
+        >>> chrom_length = 149686046
+        >>> home_dir = os.path.expanduser('~')
+        >>> map_dir = os.path.join(home_dir,'Documents','Zea','Data','Sequence',
+        ... 'NAM_imputed_maps','imputedMarkers.0.1cm')
+        >>> founder_dir = os.path.join(home_dir,'Documents','Zea','Data','Sequence',
+        ... 'NAM_founder_genos')
+        >>> founder_file = os.path.join(founder_dir,
+        ... 'gwas_snps_union_chr%d.h1.h2_minors_indels.cnv_genic_2kwin_500bpbin.20130605.txt' % chrom)
+        >>> map_file = os.path.join(map_dir,'Imputed_0.1cm_master.txt')
+        >>> ril_file = os.path.join(map_dir,'Imputed_0.1cm_chr%d_clean.txt' % chrom)
+        >>> projector = snp_projector(chrom,chrom_length,map_file,ril_file)
+        >>> popIndex = np.array(map(lambda x: (17 if x[0] == 'M' else int(re.search('(?<=Z)\d+(?=E)',x).group()))-1,)
+        ... projector.samp_names), dtype=np.int64)
+        >>> founder_data = SNPdata(chrom, founder_file, 'B73')
+        >>> projection = projector.projectAllSnps(chrom_length, popIndex, founder_data)
         """
         if not boolean:
             raise NotImplementedError("Non-boolean projection not yet implemented")

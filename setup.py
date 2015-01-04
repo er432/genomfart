@@ -13,7 +13,7 @@ packages = ['genomfart',
            ]
 setup(
     name='genomfart',
-    version='0.13',
+    version='0.14',
     author='Eli Rodgers-Melnick',
     author_email='er432@cornell.edu',
     description='A Genomics package for Python',
