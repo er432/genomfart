@@ -26,7 +26,7 @@ class SNPdata:
         self.numberOfSnps = 0
         # Open up a handle on the SNP file
         self.br = open(snp_file)
-        header = self.bf.readline().strip().split('\t')
+        header = self.br.readline().strip().split('\t')
         # Get the names of the samples
         self.samps = header[samp_start_col:]
         self.ref_samp = ref_samp
