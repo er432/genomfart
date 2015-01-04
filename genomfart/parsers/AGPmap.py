@@ -334,7 +334,7 @@ class AGPMap:
         -------
         The name of the last marker
         """
-        return self.markercm[self.chrend[chromosome-1]]
+        return self.marker[self.chrend[chromosome-1]]
     def getLastGeneticPosition(self, chromosome):
         """ Gets the last genetic position on a chromosome
 
@@ -386,5 +386,4 @@ class AGPMap:
         -------
         Number of the marker
         """
-        print marker_name
         return int(re.search('\d+',marker_name).group())
