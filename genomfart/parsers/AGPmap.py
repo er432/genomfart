@@ -188,6 +188,7 @@ class AGPMap:
         self.marker = []
         # Load data
         mapFile = open(mapFile)
+        header = mapFile.readline()
         for i,line in enumerate(mapFile):
             line = line.strip().split('\t')
             chrom = int(line[colDict['chrom']])
