@@ -60,7 +60,7 @@ class snp_projector:
         """
         self.genotypes = []        
         rilFile = open(rilFile)
-        header = rilFile.readline.strip().split('\t')
+        header = rilFile.readline().strip().split('\t')
         nMarkers = len(header)-1
         count = 0
         while 1:
