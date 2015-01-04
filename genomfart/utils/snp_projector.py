@@ -48,6 +48,8 @@ class snp_projector:
         self.maxMarker = self.theAGPMap.getMarkerNumber(self.theAGPMap.getLastMarkerName(chromosome))
         self.sampleNameMap = {}
         self.genotypes = []
+        self.samp_names = []        
+        self.importMarkersForMap(rilFile)
     def importMarkersForMap(self, rilFile):
         """ Reads the data file for a chromosome with the sample allele states
 
@@ -67,6 +69,7 @@ class snp_projector:
             data = data.split('\t')
             self.sampleNameMap[data[0]] = count
             self.genotypes.append([])
+            self.samp_names.append(data[0])
             for j in xrange(nMarkers):
                 self.genotypes[-1].append(float(data[j+1]))
         self.genotypes = np.array(self.genotypes)
