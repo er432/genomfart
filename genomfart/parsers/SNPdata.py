@@ -60,7 +60,7 @@ class SNPdata:
         """
         geno = np.zeros(len(self.samps) -(1 if skip_ref else 0))
         for count,i in enumerate(xrange(self.samp_start_col,self.col_length)):
-            if skip_ref and i == ref_ind:
+            if skip_ref and i == self.ref_ind:
                 continue
             geno[count] = float(self.parsedLine[i])
         return geno
