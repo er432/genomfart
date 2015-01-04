@@ -12,6 +12,14 @@ genomfart.test.utils.bigDataFrameTest module
     :undoc-members:
     :show-inheritance:
 
+genomfart.test.utils.version_mapper_test module
+-----------------------------------------------
+
+.. automodule:: genomfart.test.utils.version_mapper_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

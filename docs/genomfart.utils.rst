@@ -36,6 +36,22 @@ genomfart.utils.polymorphism_formatter module
     :undoc-members:
     :show-inheritance:
 
+genomfart.utils.snp_projector module
+------------------------------------
+
+.. automodule:: genomfart.utils.snp_projector
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+genomfart.utils.version_mapper module
+-------------------------------------
+
+.. automodule:: genomfart.utils.version_mapper
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
