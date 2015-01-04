@@ -74,7 +74,7 @@ class snp_projector:
                 self.genotypes[-1].append(float(data[j+1]))
         self.genotypes = np.array(self.genotypes)
         rilFile.close()
-    def projectSnpBoolean(parents, pos, chrom_length, popIndex):
+    def projectSnpBoolean(self, parents, pos, chrom_length, popIndex):
         """ Projects a SNP onto descendants if parent values are boolean
 
         Parameters
