@@ -4,8 +4,8 @@ import numba as nb
 import numpy as np
 
 @jit(argtypes=(
-    nb.int64[:], nb.int64[:], np.float64[:], nb.float64[:,:], nb.int64,
-    nb.int64, nb.int64, np.float64), restype=nb.void)
+    nb.int64[:], nb.int64[:], nb.double[:], nb.double[:,:], nb.int64,
+    nb.int64, nb.int64, nb.double), restype=nb.void)
 def _projectSnpBoolean(parents, popIndex, snpvalues, genotypes, nSamples,
                        leftmarker, rightmarker, pd):
     """ Projects SNPs if parents have boolean genotypes
