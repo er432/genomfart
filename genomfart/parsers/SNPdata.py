@@ -59,10 +59,12 @@ class SNPdata:
         Array of genotypes for each of the founders
         """
         geno = np.zeros(len(self.samps) -(1 if skip_ref else 0))
+        subtract_num = 0
         for count,i in enumerate(xrange(self.samp_start_col,self.col_length)):
             if skip_ref and i == self.ref_ind:
+                subtract_num = 1
                 continue
-            geno[count] = float(self.parsedLine[i])
+            geno[count-subtract_num] = float(self.parsedLine[i])
         return geno
     def getPosition(self):
         """ Gets the current position on the chromosome
