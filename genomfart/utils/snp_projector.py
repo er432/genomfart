@@ -44,8 +44,8 @@ class snp_projector:
         self.chromosome = chromosome
         self.chrom_length = chrom_length
         self.theAGPMap = AGPMap(mapFile, useAgpV2)
-        self.firstMarker = self.getMarkerNumber(self.theAGPMap.getFirstMarkerName(chromosome))
-        self.maxMarker = self.getMarkerNumber(self.theAGPMap.getLastMarkerName(chromosome))
+        self.firstMarker = self.theAGPMap.getMarkerNumber(self.theAGPMap.getFirstMarkerName(chromosome))
+        self.maxMarker = self.theAGPMap.getMarkerNumber(self.theAGPMap.getLastMarkerName(chromosome))
         self.sampleNameMap = {}
         self.genotypes = []
     def importMarkersForMap(self, rilFile):
