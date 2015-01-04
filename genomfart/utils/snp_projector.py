@@ -109,3 +109,33 @@ class snp_projector:
         _projectSnpBoolean(parents, popIndex, snpvalues, self.genotypes,
                            nSamples, leftmarker, rightmarker, pd)
         return snpvalues
+    def projectAllSnps(self, chrom_length, popIndex, founder_data, boolean = True):
+        """ Projects all SNPs on a chromsome onto descendants
+
+        Parameters
+        ----------
+        chrom_length : int
+            The length of the chromosome
+        popIndex : np.ndarray, int
+            Indices of the population for each sample
+        founder_data : genomfart.parsers.SNPdata
+            Object containing the founder SNP data
+        boolean
+            Whether the parents returned have boolean values for SNPs
+
+        Returns
+        -------
+        Generator non-reference allele count for each RIL, as an array of
+        doubles
+        """
+        if not boolean:
+            raise NotImplementedError("Non-boolean projection not yet implemented")
+        while (founder_data.next()):
+            if boolean:
+                parents = np.array(founder_data.getGenotype(), dtype=np.int64)
+                yield self.projectSnpBoolean(parents, founder_data.getPosition(),
+                        chrom_length, popIndex)
+            else:
+                pass
+
+        
