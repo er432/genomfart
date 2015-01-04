@@ -386,4 +386,4 @@ class AGPMap:
         -------
         Number of the marker
         """
-        return int(re.search('\d+').group())
+        return int(re.search('\d+',marker_name).group())
