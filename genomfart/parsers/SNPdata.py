@@ -46,15 +46,22 @@ class SNPdata:
         else:
             self.parsedLine = inLine.strip().split('\t')
         return True
-    def getGenotype(self):
+    def getGenotype(self, skip_ref = True):
         """ Gets the genotype of the founders at the current SNP
 
+        Parameters
+        ----------
+        skip_ref : boolean
+            Whether to skip the reference sample
+        
         Returns
         -------
         Array of genotypes for each of the founders
         """
         geno = np.zeros(len(self.samps))
-        for count,i in enumerate(xrange(self.samp_start_col,col_length)):
+        for count,i in enumerate(xrange(self.samp_start_col,self.col_length)):
+            if skip_ref and self.samps[count] == self.ref_samp:
+                continue
             geno[count] = float(self.parsedLine[i])
         return geno
     def getPosition(self):
