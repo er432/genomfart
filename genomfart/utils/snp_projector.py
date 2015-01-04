@@ -89,10 +89,10 @@ class snp_projector:
         left_mark, left_mark_pos, right_mark, right_mark_pos = self.theAGPMap.getInterval(self.chromosome,
                                                                                           pos)
         left = left_mark_pos
-        if left == -1:
+        if left is None:
             left = 0
         right = right_mark_pos
-        if right == -1:
+        if right is None:
             right = self.chrom_length
         # Proportion of distance of SNP between left and right markers
         pd = (float(pos-left))/(float(right-left))
