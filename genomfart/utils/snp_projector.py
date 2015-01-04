@@ -102,7 +102,7 @@ class snp_projector:
             leftmarker = leftmarker-self.firstMarker+1
         rightmarker = self.maxMarker
         if right_mark:
-            rightmarker = self.getMarkerNumber(right_mark)
+            rightmarker = self.theAGPMap.getMarkerNumber(right_mark)
             rightmarker = rightmarker - self.firstMarker + 1
         nSamples = len(popIndex)
         snpvalues = np.zeros(nSamples)
