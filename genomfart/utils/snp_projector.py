@@ -106,6 +106,6 @@ class snp_projector:
             rightmarker = rightmarker - self.firstMarker + 1
         nSamples = len(popIndex)
         snpvalues = np.zeros(nSamples)
-        _projectSnpBoolean(parents, self.popIndex, snpvalues, self.genotypes,
+        _projectSnpBoolean(parents, popIndex, snpvalues, self.genotypes,
                            nSamples, leftmarker, rightmarker, pd)
         return snpvalues
