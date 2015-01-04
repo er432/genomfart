@@ -96,13 +96,13 @@ class snp_projector:
             right = self.chrom_length
         # Proportion of distance of SNP between left and right markers
         pd = (float(pos-left))/(float(right-left))
-        leftmarker = self.theAGPMap.getMarkerNumber(left_mark)
-        if (leftmarker == -1): leftmarker=0
-        else:
-            leftmarker = leftmarker-firstMarker+1
-        rightmarker = self.theAGPMap.getMarkerNumber(right_mark)
-        if (rightmarker == -1): rightmarker = self.maxMarker
-        else:
+        leftmarker = 0
+        if left_mark:
+            leftmarker = self.theAGPMap.getMarkerNumber(left_mark)
+            leftmarker = leftmarker-self.firstMarker+1
+        rightmarker = self.maxMarker
+        if right_mark:
+            rightmarker = self.getMarkerNumber(right_mark)
             rightmarker = rightmarker - self.firstMarker + 1
         nSamples = len(popIndex)
         snpvalues = np.zeros(nSamples)
