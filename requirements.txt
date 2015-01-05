@@ -1,4 +1,7 @@
 numpy
+numba
+enum34
+llvmlite
 biopython
 networkx
 llist

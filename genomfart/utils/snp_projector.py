@@ -11,8 +11,8 @@ def _projectSnpBoolean(parents, popIndex, snpvalues, genotypes, nSamples,
     """ Projects SNPs if parents have boolean genotypes
     """
     for i in xrange(nSamples):
-        if parents[popIndex[i]]:
-            snpvalues[i] == 0
+        if parents[popIndex[i]] == 0:
+            snpvalues[i] = 0
         else:
             leftval = genotypes[i,leftmarker]
             rightval = genotypes[i,rightmarker]
@@ -95,7 +95,9 @@ class snp_projector:
         if right is None:
             right = self.chrom_length
         # Proportion of distance of SNP between left and right markers
-        pd = (float(pos-left))/(float(right-left))
+        pd = 0.
+        if right != left:
+            pd = (float(pos-left))/(float(right-left))
         leftmarker = 0
         if left_mark:
             leftmarker = self.theAGPMap.getMarkerNumber(left_mark)
