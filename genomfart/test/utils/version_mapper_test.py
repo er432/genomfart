@@ -36,6 +36,23 @@ class version_mapper_test(unittest.TestCase):
         self.assertEqual(list(seg_map.values())[0],
             (2,16760272,16760267,'-')
         )
+    def test_v2_to_v1_seg_map(self):
+        if debug: print("Testing v2_to_v1_seg_map")
+        # Cis direction    
+        # seg_map = self.mapper.v1_to_v2_seg_map(1, 13857655, 13857659)
+        # self.assertEqual(list(seg_map.values())[0],
+        #     (1, 13856155, 13856159, 1))
+        seg_map = self.mapper.v2_to_v1_seg_map(1, 13856155, 13856159)
+        self.assertEqual(list(seg_map.values())[0],
+                         (1, 13857655, 13857659, 1))
+        # Trans direction
+        # seg_map = self.mapper.v1_to_v2_seg_map(10,139836890,139836895)
+        # self.assertEqual(list(seg_map.values())[0],
+        #     (2,16760272,16760267,'-')
+        # )
+        seg_map = self.mapper.v2_to_v1_seg_map(2,16760267,16760272)
+        self.assertEqual(list(seg_map.values())[0],
+                         (10,139836895,139836890,'-'))
 if __name__ == '__main__':
     debug = True
     unittest.main(exit = False)

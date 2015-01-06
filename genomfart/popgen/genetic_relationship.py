@@ -83,6 +83,8 @@ class genetic_relationship:
                 if verbosity:
                     if iter_count % verbosity == 0:
                         print "%d markers processed..." % iter_count
+                        print (np.max(relationship_array), np.min(relationship_array),
+                               np.any(np.isnan(relationship_array)))
             except StopIteration:
                 break
         return (1./marker_count)*relationship_array, marker_count

@@ -2,6 +2,7 @@ from genomfart.parsers.AGPmap import AGPMap
 from numba import jit
 import numba as nb
 import numpy as np
+import re
 
 @jit(argtypes=(
     nb.int64[:], nb.int64[:], nb.double[:], nb.double[:,:], nb.int64,
@@ -44,12 +45,12 @@ class snp_projector:
         self.chromosome = chromosome
         self.chrom_length = chrom_length
         self.theAGPMap = AGPMap(mapFile, useAgpV2)
-        self.firstMarker = self.theAGPMap.getMarkerNumber(self.theAGPMap.getFirstMarkerName(chromosome))
-        self.maxMarker = self.theAGPMap.getMarkerNumber(self.theAGPMap.getLastMarkerName(chromosome))
+        self.firstMarker = None
         self.sampleNameMap = {}
         self.genotypes = []
         self.samp_names = []        
         self.importMarkersForMap(rilFile)
+        self.maxMarker = self.genotypes.shape[1]-1
     def importMarkersForMap(self, rilFile):
         """ Reads the data file for a chromosome with the sample allele states
 
@@ -61,6 +62,7 @@ class snp_projector:
         self.genotypes = []        
         rilFile = open(rilFile)
         header = rilFile.readline().strip().split('\t')
+        self.firstMarker = int(re.search('\d+',header[2]).group())
         nMarkers = len(header)-1
         count = 0
         while 1:
@@ -111,7 +113,8 @@ class snp_projector:
         _projectSnpBoolean(parents, popIndex, snpvalues, self.genotypes,
                            nSamples, leftmarker, rightmarker, pd)
         return snpvalues
-    def projectAllSnps(self, chrom_length, popIndex, founder_data, boolean = True):
+    def projectAllSnps(self, chrom_length, popIndex, founder_data, boolean = True,
+                       positions = None):
         """ Projects all SNPs on a chromsome onto descendants
 
         Parameters
@@ -122,8 +125,11 @@ class snp_projector:
             Indices of the population for each sample
         founder_data : genomfart.parsers.SNPdata
             Object containing the founder SNP data
-        boolean
+        boolean : boolean
             Whether the parents returned have boolean values for SNPs
+        positions : set of ints
+            A set of specific positions to project. If None, all SNPs will
+            be projected
 
         Returns
         -------
@@ -157,6 +163,8 @@ class snp_projector:
         if not boolean:
             raise NotImplementedError("Non-boolean projection not yet implemented")
         while (founder_data.next()):
+            if positions is not None:
+                if founder_data.getPosition() not in positions: continue
             if boolean:
                 parents = np.array(founder_data.getGenotype(), dtype=np.int64)
                 yield self.projectSnpBoolean(parents, founder_data.getPosition(),

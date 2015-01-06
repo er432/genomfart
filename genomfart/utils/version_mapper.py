@@ -187,4 +187,54 @@ class version_mapper:
                            self.graph.node[v2_node]['end']-spacing-seg_length,orientation)
                     return_dict[key] = val
         return return_dict
+    def v2_to_v1_seg_map(self, v2_chr, v2_start, v2_end):
+        """
+        Gets the ranges of positions in the version 1 genome if they exist (base 1 assumed)
+
+        Parameters
+        ----------
+        v2_chr : hashable
+            The version 2 chromosome
+        v2_start : int
+            The version 2 start position (inclusive)
+        v2_end : int
+            The version 2 end position (inclusive)
+
+        Returns
+        -------
+        Dictionary of (v2_chrom,v2_start,v2_end)->(v1_chrom,v1_start,v1_end,orientation relative to v2) for
+        ranges of positions existing in version 1 
+        """
+        # Get index of version 2 segment corresponding to end position in the end dict
+        v2_end_ind = min(bisect_left(self.v2_end_dict[v2_chr],v2_end),len(self.v2_end_dict[v2_chr])-1)
+        # Get index of version 2 segment corresponding to start position in the end dict
+        v2_start_ind = min(bisect_left(self.v2_end_dict[v2_chr],v2_start),len(self.v2_end_dict[v2_chr])-1)
+        return_dict = {}
+        # Go through the range of v2 nodes
+        for i in xrange(min(v2_start_ind,v2_end_ind),max(v2_start_ind,v2_end_ind)+1):
+            # Define the nodes
+            v2_node = ('v2',v2_chr,self.v2_end_dict[v2_chr][i])
+            v1_node = self.graph.neighbors(v2_node)[0]
+            # Check if there is actual overlap between v2 interval and the start+end points
+            ovlap = Range.closed(v2_start,v2_end).isConnected(Range.closed(self.graph.node[v2_node]['start'], \
+                                                        self.graph.node[v2_node]['end']))
+            if ovlap:
+                orientation = self.graph.edge[v2_node][v1_node]['strand']
+                spacing = max(v2_start,self.graph.node[v2_node]['start']) - \
+                  self.graph.node[v2_node]['start']
+                if orientation == 1:
+                    key = (v2_chr,self.graph.node[v2_node]['start']+spacing,min(v2_end,\
+                                                self.graph.node[v2_node]['end']))
+                    seg_length = key[2]-key[1]
+                    val = (v1_node[1],self.graph.node[v1_node]['start']+spacing,\
+                           self.graph.node[v1_node]['start']+spacing+seg_length,orientation)
+                    return_dict[key] = val
+                else:
+                    key = (v2_chr,self.graph.node[v2_node]['start']+spacing,min(v2_end,\
+                                                self.graph.node[v2_node]['end']))
+                    seg_length = key[2]-key[1]
+                    val = (v1_node[1],self.graph.node[v1_node]['end']-spacing, \
+                           self.graph.node[v1_node]['end']-spacing-seg_length,orientation)
+                    return_dict[key] = val
+        return return_dict
         
