@@ -6,6 +6,7 @@ import sys
 packages = ['genomfart',
             'genomfart.parsers',
             'genomfart.data',
+            'genomfart.popgen',
             'genomfart.utils',
             'genomfart.test',
             'genomfart.test.parsers',
@@ -13,7 +14,7 @@ packages = ['genomfart',
            ]
 setup(
     name='genomfart',
-    version='0.16',
+    version='0.18',
     author='Eli Rodgers-Melnick',
     author_email='er432@cornell.edu',
     description='A Genomics package for Python',

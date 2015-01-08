@@ -162,6 +162,7 @@ class snp_projector:
         """
         if not boolean:
             raise NotImplementedError("Non-boolean projection not yet implemented")
+        founder_data.reset()
         while (founder_data.next()):
             if positions is not None:
                 if founder_data.getPosition() not in positions: continue
