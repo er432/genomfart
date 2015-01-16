@@ -1,4 +1,5 @@
 from genomfart.parsers.AGPmap import AGPMap
+from genomfart.utils.bigDataFrame import BigDataFrame
 from numba import jit
 import numba as nb
 import numpy as np
@@ -59,23 +60,34 @@ class snp_projector:
         rilFile : str
             The filename for the RIL file
         """
-        self.genotypes = []        
-        rilFile = open(rilFile)
-        header = rilFile.readline().strip().split('\t')
-        self.firstMarker = int(re.search('\d+',header[2]).group())
-        nMarkers = len(header)-1
+        rilFile = BigDataFrame(rilFile, header=True, assume_uniform_types=False)
+        nGenos = len(rilFile.colLabels)-5
+        self.genotypes = [[] for x in xrange(nGenos)]
+        self.sampleNameMap = dict((k,v-5) for k,v in rilFile.colLabels.items() if v >= 5)
+        self.samp_names = sorted(self.sampleNameMap.keys(),
+                                 key=lambda x: self.sampleNameMap[x])
         count = 0
-        while 1:
-            data = rilFile.readline().strip()
-            if data == '': break
-            data = data.split('\t')
-            self.sampleNameMap[data[0]] = count
-            self.genotypes.append([])
-            self.samp_names.append(data[0])
-            for j in xrange(nMarkers):
-                self.genotypes[-1].append(float(data[j+1]))
+        nMarkers = 0
+        self.firstMarker = self.theAGPMap.getMarkerNumber(self.theAGPMap.getFirstMarkerName(self.chromosome))
+        for row in rilFile.iterrows(cache=False):
+            for samp in self.samp_names:
+                self.genotypes[self.sampleNameMap[samp]].append(row[samp])
         self.genotypes = np.array(self.genotypes)
-        rilFile.close()
+        # header = rilFile.readline().strip().split('\t')
+        # self.firstMarker = int(re.search('\d+',header[2]).group())
+        # nMarkers = len(header)-1
+        # count = 0
+        # while 1:
+        #     data = rilFile.readline().strip()
+        #     if data == '': break
+        #     data = data.split('\t')
+        #     self.sampleNameMap[data[0]] = count
+        #     self.genotypes.append([])
+        #     self.samp_names.append(data[0])
+        #     for j in xrange(nMarkers):
+        #         self.genotypes[-1].append(float(data[j+1]))
+        # self.genotypes = np.array(self.genotypes)
+        # rilFile.close()
     def projectSnpBoolean(self, parents, pos, chrom_length, popIndex):
         """ Projects a SNP onto descendants if parent values are boolean
 

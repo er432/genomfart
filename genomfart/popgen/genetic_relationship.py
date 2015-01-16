@@ -87,5 +87,7 @@ class genetic_relationship:
                                np.any(np.isnan(relationship_array)))
             except StopIteration:
                 break
+            except ValueError:
+                continue
         return (1./marker_count)*relationship_array, marker_count
         

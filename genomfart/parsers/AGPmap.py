@@ -186,6 +186,8 @@ class AGPMap:
         self.markercm = []
         # Keep track of marker names
         self.marker = []
+        # Keep track of alternative marker names if necessary
+        self.marker_alt_names = []
         # Load data
         mapFile = open(mapFile)
         header = mapFile.readline()
@@ -196,6 +198,8 @@ class AGPMap:
             self.marker.append(line[colDict['marker']])
             self.markercm.append(float(line[colDict['markercm']]))
             self.markerPosition.append(int(line[colDict['markerpos']]))
+            if not useAgpV2:
+                self.marker_alt_names.append(line[1])
             self.markerChromosome.append(chrom)
         # Convert arrays to numpy arrays
         self.markerPosition = np.array(self.markerPosition)
