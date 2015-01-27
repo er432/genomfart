@@ -8,13 +8,14 @@ packages = ['genomfart',
             'genomfart.data',
             'genomfart.popgen',
             'genomfart.utils',
+            'genomfart.utils.scripts',
             'genomfart.test',
             'genomfart.test.parsers',
             'genomfart.test.utils'
            ]
 setup(
     name='genomfart',
-    version='0.21',
+    version='0.22',
     author='Eli Rodgers-Melnick',
     author_email='er432@cornell.edu',
     description='A Genomics package for Python',
