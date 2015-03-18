@@ -115,6 +115,16 @@ class gff_parserTest(unittest.TestCase):
         pos = self.parser.get_codon_position('Pt',4707)
         self.assertEqual(len(pos),1)
         self.assertEquals(pos['CDS:GRMZM5G811749_P01'],3)
+    def test_overlaps_type(self):
+        if debug: print("Testing overlaps_type")
+        self.assertTrue(self.parser.overlaps_type('Pt',100,1000,'repeat_region'))
+        self.assertFalse(self.parser.overlaps_type('Pt',100,1000,'gene'))
+        self.assertFalse(self.parser.overlaps_type('Pt',100,1000,'CDS'))
+        self.assertFalse(self.parser.overlaps_type('Pt',100,1000,'transcript'))
+        self.assertFalse(self.parser.overlaps_type('Pt',100,1000,'five_prime_UTR'))
+        self.assertFalse(self.parser.overlaps_type('Pt',100,1000,'three_prime_UTR'))
+        self.assertFalse(self.parser.overlaps_type('Pt',100,1000,'exon'))
+        self.assertTrue(self.parser.overlaps_type('Pt',11400,11600,'three_prime_UTR'))
 if __name__ == "__main__":
     debug = True
     unittest.main(exit = False)

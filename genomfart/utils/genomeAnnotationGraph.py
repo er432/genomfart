@@ -532,3 +532,30 @@ class genomeAnnotationGraph(object):
         List of the parent IDs of the element
         """
         return self.graph.predecessors(element_id)            
+    def overlaps_type(self, seqid, start, end, element_type):
+        """ Returns True if the given range overlaps an element of the given type
+
+        Parameters
+        ----------
+        seqid : str
+            The name of the coordinate system to check
+        start : int
+            The start of the range to check (inclusive, 1-based)
+        end : int
+            The end of the range to check (inclusive, 1-based)
+        element_type : str
+            The element type that you want (e.g. 'gene', 'mRNA')
+
+        Raises
+        ------
+        KeyError
+            If the seqid is not present
+
+        Returns
+        -------
+        True if the range overlaps at least 1 element of the give type, else False
+        """
+        for element in self.get_overlapping_element_ids(seqid, start, end):
+            if self.graph.node[element]['type'] == element_type:
+                return True
+        return False
