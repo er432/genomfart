@@ -5,14 +5,14 @@ class LRUcache(dict):
 
     Examples
     --------
-    from genomfart.utils.caching import LRUcache
-
-    retreiveFunc = lambda k: k.upper()
-    def disposeFunc(k,v):
-        print('%s Test' % v)
-        return
-
-    a = LRUcache(retreiveFunc, delFunc=disposeFunc, maxsize=3)
+    >>> from genomfart.utils.caching import LRUcache
+    >>>
+    >>> retreiveFunc = lambda k: k.upper()
+    >>> def disposeFunc(k,v):
+    ...     print('%s Test' % v)
+    ...     return
+    >>>
+    >>> a = LRUcache(retreiveFunc, delFunc=disposeFunc, maxsize=3)
     """
     def __init__(self, retrieveFunc, delFunc=None, maxsize=1000, *args, **kwargs):
         """ Instantiates the LRUcache
@@ -54,9 +54,7 @@ class LRUcache(dict):
         """
         if self._delFunc:
             self._delFunc(key, super(LRUcache,self).__getitem__(key))
-        print "ok1"
         super(LRUcache, self).__delitem__(key)
-        print "ok2"
     def __setitem__(self, key, val):
         """ Adds a new item to the cache
 
