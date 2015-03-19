@@ -2,8 +2,19 @@ from llist import dllist, dllistnode
 
 class LRUcache(dict):
     """ A least recently used cache
+
+    Examples
+    --------
+    from genomfart.utils.caching import LRUcache
+
+    retreiveFunc = lambda k: k.upper()
+    def disposeFunc(k,v):
+        print('%s Test' % v)
+        return
+
+    a = LRUcache(retreiveFunc, delFunc=disposeFunc, maxsize=3)
     """
-    def __init__(self, retrieveFunc, maxsize=1000, *args, **kwargs):
+    def __init__(self, retrieveFunc, delFunc=None, maxsize=1000, *args, **kwargs):
         """ Instantiates the LRUcache
 
         Parameters
@@ -11,6 +22,9 @@ class LRUcache(dict):
         retrieveFunc : callable
             Function that takes a key as an argument and returns the value
             corresponding to that key
+        delFunc : callable
+            Function that takes key, value as an arguments and does something before
+            deletion
         maxsize : int
             The maximum size the cache can keep before kicking keys out
         """
@@ -19,6 +33,9 @@ class LRUcache(dict):
         # Call the dictionary constructor
         super(LRUcache, self).__init__(*args, **kwargs)
         self._retrieveFunc = retrieveFunc
+        self._delFunc = None
+        if delFunc:
+            self._delFunc = delFunc
         self._maxsize = maxsize
         # Create dictionary of key -> node object and doublelinkedList
         # of keys
@@ -26,6 +43,20 @@ class LRUcache(dict):
         self._keyQueue = dllist()
         for key in self:
             self._keyNodeDict[key] = self._keyQueue.append(key)
+    def __delitem__(self, key):
+        """ Removes item from the cache, and performs any logic necessary prior
+        to removal
+
+        Parameters
+        ----------
+        key : hashable
+            The key to use for indexing
+        """
+        if self._delFunc:
+            self._delFunc(key, super(LRUcache,self).__getitem__(key))
+        print "ok1"
+        super(LRUcache, self).__delitem__(key)
+        print "ok2"
     def __setitem__(self, key, val):
         """ Adds a new item to the cache
 
