@@ -8,6 +8,7 @@ Subpackages
 
     genomfart.data
     genomfart.parsers
+    genomfart.popgen
     genomfart.test
     genomfart.utils
 

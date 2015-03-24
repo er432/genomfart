@@ -1,6 +1,13 @@
 genomfart.utils package
 =======================
 
+Subpackages
+-----------
+
+.. toctree::
+
+    genomfart.utils.scripts
+
 Submodules
 ----------
 
