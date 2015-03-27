@@ -88,9 +88,9 @@ def _append_genetic_relationship_with_missing(genotypes, relationship_mat, snp_c
     V_geno = 2*p*(1-p)
     # Get genetic relationship values
     for j in xrange(taxa_count):
-        if genotypes[i] < 0: continue
+        if genotypes[j] < 0: continue
         for k in xrange(j+1):
-            if genotypes[j] < 0: continue
+            if genotypes[k] < 0: continue
             relationship_mat[j,k] += ((genotypes[j]-E_geno)*(genotypes[k]-E_geno))/V_geno
             snp_counts[j,k] += 1
     return True
