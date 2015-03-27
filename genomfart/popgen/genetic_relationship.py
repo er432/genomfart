@@ -154,9 +154,9 @@ class genetic_relationship:
         """ Gets the genetic relationship matrix, as defined in the GCTA paper
         (e.g. eq. 3 from http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3014363/)
 
-        Note here that all pairs are assumed to have the same number of SNPs
-        used for the calculation of their relationship (i.e. not accounting for
-        missing genotypes)
+        Here, pairs can have different numbers of non-missing SNPs. Essentially,
+        missing data gets imputed to the mean genotype, which zeros that entry out
+        in the relationship equation.
 
         Parameters
         ----------
