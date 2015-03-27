@@ -190,7 +190,7 @@ class genetic_relationship:
                     relationship_array = np.zeros((taxa_count, taxa_count))
                     marker_count = np.zeros((taxa_count, taxa_count),
                                             dtype=np.int64)
-                included = _append_genetic_relationship(genotypes, relationship_array,
+                included = _append_genetic_relationship_with_missing(genotypes, relationship_array,
                             marker_count, min_MAF, max_missing, taxa_count)
                 iter_count += 1
                 if verbosity:
