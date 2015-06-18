@@ -126,7 +126,7 @@ class snp_projector:
                            nSamples, leftmarker, rightmarker, pd)
         return snpvalues
     def projectAllSnps(self, chrom_length, popIndex, founder_data, boolean = True,
-                       positions = None):
+                       positions = None, enumerate_snps=False):
         """ Projects all SNPs on a chromsome onto descendants
 
         Parameters
@@ -142,6 +142,8 @@ class snp_projector:
         positions : set of ints
             A set of specific positions to project. If None, all SNPs will
             be projected
+        enumerate_snps : boolean
+            Whether to return both the absolute value of the SNP index along with the positions
 
         Returns
         -------
@@ -175,14 +177,22 @@ class snp_projector:
         if not boolean:
             raise NotImplementedError("Non-boolean projection not yet implemented")
         founder_data.reset()
+        ind = 0
         while (founder_data.next()):
             if positions is not None:
-                if founder_data.getPosition() not in positions: continue
+                if founder_data.getPosition() not in positions:
+                    ind += 1
+                    continue
             if boolean:
                 parents = np.array(founder_data.getGenotype(), dtype=np.int64)
-                yield self.projectSnpBoolean(parents, founder_data.getPosition(),
+                if enumerate_snps:
+                    yield ind,self.projectSnpBoolean(parents, founder_data.getPosition(),
+                        chrom_length, popIndex)
+                else:
+                    yield self.projectSnpBoolean(parents, founder_data.getPosition(),
                         chrom_length, popIndex)
             else:
                 pass
+            ind += 1
 
         

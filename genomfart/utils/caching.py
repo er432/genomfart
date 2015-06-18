@@ -54,6 +54,9 @@ class LRUcache(dict):
         """
         if self._delFunc:
             self._delFunc(key, super(LRUcache,self).__getitem__(key))
+        v = super(LRUcache, self).__getitem__(key)
+        del v
+        super(LRUcache, self).__setitem__(key, None)
         super(LRUcache, self).__delitem__(key)
     def __setitem__(self, key, val):
         """ Adds a new item to the cache
