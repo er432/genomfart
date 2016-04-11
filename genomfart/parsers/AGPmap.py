@@ -4,10 +4,7 @@ import numba as nb
 from numba import jit
 from bisect import bisect_left
 
-@jit(
-    argtypes=(nb.int64, nb.int64, nb.int64, nb.int64, nb.int64[:]),
-    restype=nb.int64[:]
-    )
+@jit
 def _getInterval(chromosome, position, start, end, markerPosition):
     """ Gets the markers, position of marker in bp flanking a position
     on the chromosome
@@ -51,11 +48,7 @@ def _getInterval(chromosome, position, start, end, markerPosition):
             left = mid
     return np.array([left, right])
 
-@jit(
-    argtypes=(nb.int64, nb.int64, nb.int64, nb.int64, nb.int64[:],
-              nb.float64[:]),
-    restype=nb.float64
-    )
+@jit
 def _getCmFromPosition(chromosome, position, start, end, markerPosition,
                        markercm):
     """ Gets cM position from chromosome bp
@@ -101,11 +94,7 @@ def _getCmFromPosition(chromosome, position, start, end, markerPosition,
         - markerPosition[left]);
     return markercm[left] + (position - markerPosition[left]) * g2pRatio
 
-@jit(
-    argtypes=(nb.int64, nb.float64, nb.int64, nb.int64, nb.int64[:],
-              nb.float64[:]),
-    restype=nb.int64
-    )
+@jit
 def _getPositionFromCm(chromosome, cM, start, end, markerPosition,
                        markercm):
     """ Gets chromosome bp from cM position
