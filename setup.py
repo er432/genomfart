@@ -15,7 +15,7 @@ packages = ['genomfart',
            ]
 setup(
     name='genomfart',
-    version='0.31',
+    version='0.32',
     author='Eli Rodgers-Melnick',
     author_email='er432@cornell.edu',
     description='A Genomics package for Python',
