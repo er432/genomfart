@@ -4,9 +4,7 @@ import numpy as np
 import numba as nb
 from numba import jit
 
-@jit(argtypes=(
-    nb.double[:], nb.double[:,:], nb.double, nb.int64
-), restype=nb.boolean)
+@jit
 def _append_genetic_relationship(genotypes, relationship_mat, min_MAF, taxa_count):
     """ Calculates portion of genetic relationship accounted for by
     a single locus. Adds onto current matrix of genetic relationships
@@ -41,9 +39,7 @@ def _append_genetic_relationship(genotypes, relationship_mat, min_MAF, taxa_coun
             relationship_mat[j,k] += ((genotypes[j]-E_geno)*(genotypes[k]-E_geno))/V_geno
     return True
 
-@jit(argtypes=(
-    nb.double[:], nb.double[:,:], nb.int64[:,:], nb.double, nb.int64, nb.int64
-), restype=nb.boolean)
+@jit
 def _append_genetic_relationship_with_missing(genotypes, relationship_mat, snp_counts,
                                               min_MAF, max_missing, taxa_count):
     """ Calculates portion of genetic relationship accounted for by a single locus.
