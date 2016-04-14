@@ -64,7 +64,7 @@ class gff_parser(genomeAnnotationGraph):
                 seqid = line[0]
                 # Parse the attributes into a dictionary of key->val
                 attr_dict = dict((k,v) for k,v in map(lambda x: x.split('='),
-                                                      line[8].split(';')))
+                            filter(lambda y: '=' in y, line[8].split(';'))))
                 # Check if the element has an ID. If not, give it one
                 if 'ID' in attr_dict:
                     element_id = attr_dict['ID']
