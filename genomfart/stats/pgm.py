@@ -1,9 +1,93 @@
+from multiprocessing.dummy import Pool
 from functools import partial
 from collections import deque
+from numba import jit
 import networkx as nx
 import numpy as np
 import itertools
 import heapq
+
+def write_libpgm_json(json_dict,write_file):
+    num_func = lambda x: ("%0.3g" % x)[1:] if 1.e-12< x<1 else ("%0.3g" % np.abs(np.round(x)))
+    write_file.write('{\n')
+    write_file.write("\t\"V\": [%s],\n" % ", ".join(map(lambda x: "\"%s\"" % x, 
+                        json_dict["V"])))
+    for i,e in enumerate(json_dict['E']):
+        write_line = None
+        n_edges = len(json_dict['E'])
+        if i == 0:
+            if n_edges > 1:
+                write_line = "\t\"E\": [[%s],\n" % ", ".join(map(lambda x: "\"%s\"" % x, e))
+            else:
+                write_line = "\t\"E\": [[%s]],\n" % ", ".join(map(lambda x: "\"%s\"" % x, e))
+        else:
+            if i == (n_edges-1):
+                write_line = "\t\t[%s]],\n" % ", ".join(map(lambda x: "\"%s\"" % x, e))
+            else:
+                write_line = "\t\t[%s],\n" % ", ".join(map(lambda x: "\"%s\"" % x, e))
+        write_file.write(write_line)
+    write_file.write('\t"Vdata": {\n')
+    n_nodes = len(json_dict['Vdata'])
+    for i,(k,v) in enumerate(json_dict['Vdata'].items()):
+        write_file.write('\t\t"%s": {\n' % k)
+        write_file.write('\t\t\t"numoutcomes": %d,\n' % v["numoutcomes"])
+        write_file.write('\t\t\t"vals": [%s],\n' % \
+                             ", ".join(map(lambda x: "\"%s\"" % x, v['vals'])))
+        if v['parents'] is None:
+            write_file.write('\t\t\t"parents": None,\n')
+        else:
+            write_file.write('\t\t\t"parents": [%s],\n' % \
+                             ", ".join(map(lambda x: "\"%s\"" % x, v['parents'])))
+        if v['children'] is None:
+            write_file.write('\t\t\t"children": None,\n')
+        else:
+            write_file.write('\t\t\t"children": [%s],\n' % \
+                             ", ".join(map(lambda x: "\"%s\"" % x, v['children'])))
+        if type(v['cprob']) == list:
+            write_file.write('\t\t\t"cprob": [%s]\n' % \
+                                 ", ".join(map(num_func, v['cprob'])))
+        else:
+            n_probs = len(v['cprob'])
+            for j,(k1,v1) in enumerate(v['cprob'].items()):
+                if j == 0:
+                    write_file.write('\t\t\t"cprob": {\n')
+                    write_line = "\t\t\t\t\"%s\": [%s],\n" % \
+                          (k1,
+                               ", ".join(map(num_func, v1)))
+                else:
+                    if j == (n_probs-1):
+                        write_line = "\t\t\t\t\"%s\": [%s]\n" % \
+                              (k1,
+                                   ", ".join(map(num_func, v1)))
+                    else:
+                        write_line = "\t\t\t\t\"%s\": [%s],\n" % \
+                              (k1,
+                                   ", ".join(map(num_func, v1)))
+                write_file.write(write_line)
+            write_file.write("\t\t\t}\n")
+        if i == (n_nodes-1):
+            write_file.write("\t\t}\n")
+        else:
+            write_file.write("\t\t},\n")
+    write_file.write("\t}\n")
+    write_file.write("}\n")
+
+## Function for sending messages in parallel
+def _par_send_message(G,from_node,to_node):
+    if G.node[to_node]['bipartite'] == 'v' and \
+      G.node[to_node]['observed']: return None
+    if G.node[from_node]['bipartite'] == 'v':
+        return (((from_node,to_node),'to_f_message'),
+                    G.send_message_to_factor(from_node,to_node,update=False))
+    else:
+        return (((from_node,to_node),'to_v_message'),
+                    (G.send_message_to_var(from_node, to_node,update=False)))
+
+class Messenger(object):
+    def __init__(self, G):
+        self._G = G
+    def __call__(self,e):
+        return _par_send_message(self._G,e[0],e[1])
 
 class cpd(object):
     """ Base class for a conditional probability distribution
@@ -183,6 +267,25 @@ class discrete_factor_graph(nx.Graph):
             message_prod = np.multiply(message_prod, 
                            self.edge[n][var]['to_v_message'])
         return (message_prod/np.sum(message_prod))
+    def get_random_spanning_tree(self):
+        """ Gets a random spanning tree of this graph
+
+        Returns
+        -------
+        A random spanning tree of this factor graph
+        """
+        tree = nx.Graph()
+        # Choose a random starting node
+        current_node = np.random.choice(self.nodes())
+        while len(tree) < len(self):
+            # Randomly select a neighbor
+            neighbor = np.random.choice(self.neighbors(current_node))
+            # Add the edge from the current node to the neighbor if the
+            # neighbor hasn't been encountered before
+            if neighbor not in tree:
+                tree.add_edge(current_node, neighbor)
+            current_node = neighbor
+        return tree
     def reset_nonobs_messages(self):
         """ Resets all messages on the graph that aren't involving observed
         variables
@@ -193,11 +296,10 @@ class discrete_factor_graph(nx.Graph):
                 if self.node[n1]['observed']: continue
             elif self.node[n2]['bipartite'] == 'v':
                 if self.node[n2]['observed']: continue
-            else:
-                self.edge[n1][n2]['to_v_message'] = np.ones_like(self.edge[n1][n2]['to_v_message']) 
-                self.edge[n1][n2]['to_f_message'] = np.ones_like(self.edge[n1][n2]['to_f_message']) 
-                self.edge[n1][n2]['v_message_sent'] = False
-                self.edge[n1][n2]['f_message_sent'] = False
+            self.edge[n1][n2]['to_v_message'] = np.ones_like(self.edge[n1][n2]['to_v_message']) 
+            self.edge[n1][n2]['to_f_message'] = np.ones_like(self.edge[n1][n2]['to_f_message']) 
+            self.edge[n1][n2]['v_message_sent'] = False
+            self.edge[n1][n2]['f_message_sent'] = False
     def run_BP_tree(self):
         """ Run belief propagation for a tree. Will throw an error if not
         a tree
@@ -251,91 +353,76 @@ class discrete_factor_graph(nx.Graph):
             # Check if this node still has messages to send
             if n_to_send > 0:
                 message_queue.append(node)
-    def run_LBP_rbp(self, maxit=1000):
-        """ Runs loopy belief propagation using residual belief propagation
-        
-        maxit: int
+    def run_synchronous_LBP(self, maxit=100, verbose=False):
+        """ Runs loopy belief propagation by synchronously updating
+        messages while they change
+
+        Parameters
+        ----------
+        maxit : int
             Maximum number of iterations to perform
-        """
-        # Reset messages
-        self.reset_nonobs_messages()
-        ## Send initial messages up and down using BFS
-        ## Also, create queue of (-message_priority, message_edge, message_name)
-        # Initialize all priority to 0
-        message_queue = []
-        ## Create dictionary of (message_edge, message_name) -> current priority
-        priority_dict = {}
-        root_node = sorted(self.nodes(),key=self.degree)[-1]
-        bfs = list(nx.bfs_edges(self,source=root_node))
-        for to_node, from_node in reversed(bfs):
-            if self.node[from_node]['bipartite'] == 'v':
-                self.send_message_to_factor(from_node,to_node)
-                heapq.heappush(message_queue,(0.,(from_node,to_node),'to_f_message'))
-                priority_dict[((from_node,to_node),'to_f_message')] = -0.001
+        """ 
+        # Run an initial synchronous update on all edges
+        self.run_synchronous_update()
+        # Run additional updates
+        to_update_list = []
+        for i in xrange(maxit):
+            changed = None
+            if i == 0:
+                changed = self.run_synchronous_update(return_changed=True)
             else:
-                self.send_message_to_var(from_node, to_node)
-                heapq.heappush(message_queue,(0.,(from_node,to_node),'to_v_message'))
-                priority_dict[((from_node,to_node),'to_v_message')] = -0.001
-        for from_node, to_node in bfs:
-            if self.node[from_node]['bipartite'] == 'v':
-                self.send_message_to_factor(from_node,to_node)
-                heapq.heappush(message_queue,(0.,(from_node,to_node),'to_f_message'))
-                priority_dict[((from_node,to_node),'to_f_message')] = -0.001
-            else:
-                self.send_message_to_var(from_node, to_node)
-                heapq.heappush(message_queue,(0.,(from_node,to_node),'to_v_message'))
-                priority_dict[((from_node,to_node),'to_v_message')] = -0.001
-        # Iterate based on priority
-        for it in xrange(maxit):
-            # Get highest priority edge
-            neg_priority,(n1,n2),message_name = heapq.heappop(message_queue)
-            current_message_val = np.array(self.edge[n1][n2][message_name])
-            # Send the new message
-            var_node = n1 if self.node[n1]['bipartite'] == 'v' else n2
-            factor_node = n1 if self.node[n1]['bipartite'] == 'f' else n2
-            to_node = None
-            from_node = None
-            if message_name == 'to_f_message':
-                self.send_message_to_factor(var_node,factor_node)
-                to_node = factor_node
-                from_node = var_node
-            else:
-                self.send_message_to_var(factor_node,var_node)
-                to_node = var_node
-                from_node = factor_node
-            # Calculate new node priority
-            priority = np.max(np.abs(np.log(np.divide(self.edge[n1][n2][message_name],
-                                                   current_message_val))))
-            if np.isnan(priority):
-                priority=0.
-            # Put into queue
-            heapq.heappush(message_queue,(-priority,(n1,n2),message_name))
-            priority_dict[((from_node,to_node),message_name)] = -priority
-            # Update neighboring nodes, not including the from node
-            neighbor_message_name = 'to_v_message' if message_name == 'to_f_message' else 'to_f_message'
-            for n in self.neighbors(to_node):
-                if n == to_node: continue
-                # Remove the message from the queue
-                message_queue.remove((priority_dict[((to_node,n),neighbor_message_name)],
-                                          (to_node,n),neighbor_message_name))
-                # Update message
-                current_message_val = np.array(self.edge[to_node][n][neighbor_message_name])
-                if neighbor_message_name == 'to_f_message':
-                    self.send_message_to_factor(to_node, n)
-                else:
-                    self.send_message_to_var(to_node,n)
-                # Calculate residual
-                priority = np.max(np.abs(np.log(np.divide(self.edge[to_node][n][neighbor_message_name],
-                                                              current_message_val))))
-                if np.isnan(priority):
-                    priority=0.
-                # Put back into queue
-                heapq.heappush(message_queue,(-priority,(to_node,n),neighbor_message_name))
-                priority_dict[((to_node,n),neighbor_message_name)]=-priority
-            # End if all priorities are 0
-            if all([x[0]==0. for x in message_queue]):
+                changed = self.run_synchronous_update(edge_yielder=to_update_list,
+                                                          return_changed=True)
+            # If nothing has changed, break from loop
+            if len(changed) == 0:
                 break
-    def send_message_to_factor(self, var, factor_name):
+            to_update_list = []
+            added_edges = set()
+            # Add all messages emanating from nodes that have received changed
+            # messages to the update list
+            for from_node,to_node in changed:
+                for n in self.neighbors(to_node):
+                    if (to_node,n) not in added_edges:
+                        to_update_list.append((to_node,n))
+                        added_edges.add((to_node,n))
+        if verbose:
+            if i == (maxit-1):
+                print("Did not completely converge after %d iterations" % (maxit))
+            else:
+                print("Converged after %d iterations" % i)
+    def run_synchronous_update(self, edge_yielder=None, return_changed = False):
+        """ Updates all nodes simultaneously
+        
+        Parameters
+        ----------
+        edge_yielder : iterable
+            Lists edges to update
+        return_changed : bool
+            Whether to return list of edges that were modified
+        """ 
+        # Create dictionary of ((from_node,to_node),message_type) -> message
+        message_dict = {}
+        run_all = (edge_yielder is None)
+        if edge_yielder is None:
+            edge_yielder = self.edges_iter()
+        message_dict.update(**dict(filter(lambda x: x is not None,
+                                map(Messenger(self),
+                           edge_yielder))))
+        if run_all:
+            message_dict.update(**dict(filter(lambda x: x is not None,
+                              map(Messenger(self),
+                           map(lambda x: tuple(reversed(x)),self.edges_iter())))))
+        # Send all messages, and potentially add to the list of messages
+        # that were changed
+        return_list = []
+        for ((n1,n2),message_type),message in message_dict.items():
+            if return_changed:
+                if not np.allclose(self.edge[n1][n2][message_type],message):
+                    return_list.append((n1,n2))
+            self.edge[n1][n2][message_type] = message
+        if return_changed:
+            return return_list
+    def send_message_to_factor(self, var, factor_name, update=True):
         """ Sends a message from a variable to a factor
         
         Parameters
@@ -350,18 +437,30 @@ class discrete_factor_graph(nx.Graph):
             raise ValueError("Nodes are not a variable and a factor")
         # Skip if observed (message should already be set)
         if self.node[var]['observed']:
-            self.edge[var][factor_name]['f_message_sent'] = True
-            return
+            if update:
+                self.edge[var][factor_name]['f_message_sent'] = True
+                return
+            else:
+                return self.edge[factor_name][var]['to_f_message']
         message = np.ones_like(self.edge[var][factor_name]['to_f_message'])
         # Multiply out the message from factors to compute the message
         for n in self.neighbors(var):
             if n != factor_name:
                 message = np.multiply(message,
                                       self.edge[n][var]['to_v_message'])
-        # Send the message
-        self.edge[var][factor_name]['to_f_message'] = message
-        self.edge[var][factor_name]['f_message_sent'] = True
-    def send_message_to_var(self, factor_name, var):
+        # Ensure moderate values
+        message /= np.sum(message)
+        if 0 < np.min(message) < 1.e-10:
+            message /= np.max(message)
+        elif np.max(message) > 1.e10:
+            message /= np.max(message)
+        if update:
+            # Send the message
+            self.edge[var][factor_name]['to_f_message'] = message
+            self.edge[var][factor_name]['f_message_sent'] = True
+        else:
+            return message
+    def send_message_to_var(self, factor_name, var, update=True):
         """ Sends a message from a factor to a variable
         
         Parameters
@@ -376,8 +475,11 @@ class discrete_factor_graph(nx.Graph):
             raise ValueError("Nodes are not a variable and a factor")
         # Skip if variable is observed
         if self.node[var]['observed']:
-            self.edge[factor_name][var]['v_message_sent'] = True
-            return
+            if update:
+                self.edge[factor_name][var]['v_message_sent'] = True
+                return
+            else:
+                return self.edge[factor_name][var]['to_v_message']
         # Instantiate the message block
         dims = np.zeros(self.degree(factor_name),dtype=np.int64)
         dim_iter = []
@@ -405,9 +507,18 @@ class discrete_factor_graph(nx.Graph):
             if n != var:
                 message = np.sum(message, axis=(i-sub_num))
                 sub_num += 1
-        # Send the message
-        self.edge[factor_name][var]['to_v_message'] = message
-        self.edge[factor_name][var]['v_message_sent'] = True
+        # Ensure moderate values
+        message /= np.sum(message)
+        if 0 < np.min(message) < 1.e-10:
+            message /= np.max(message)
+        elif np.max(message) > 1.e10:
+            message /= np.max(message)
+        if update:
+            # Send the message
+            self.edge[factor_name][var]['to_v_message'] = message
+            self.edge[factor_name][var]['v_message_sent'] = True
+        else:
+            return message
     def set_variable_state(self, var, val):
         """ Sets a variable's state, given observed data
         
@@ -417,7 +528,7 @@ class discrete_factor_graph(nx.Graph):
             The variable name
         val : hashable
             The observed value
-        """
+       """
         if not self.node[var]['bipartite'] == 'v':
             raise ValueError("%s is not a variable node" % str(var))
         self.node[var]['state'] = val
@@ -463,7 +574,7 @@ class bayes_net(nx.DiGraph):
         # Add the edges
         for parent in cpd.get_parents():
             super(bayes_net, self).add_edge(parent, cpd.get_name())
-    def convert_to_discrete_factor_graph(self):
+    def convert_to_discrete_factor_graph(self, nthreads=1):
         """ Converts the existing bayesian network to a factor graph
         
         Returns
@@ -488,4 +599,38 @@ class bayes_net(nx.DiGraph):
                    partial(factor_func,self.node[node]['cpd']),
                    dict(var_value_dict))
         return factor
+    def write_libpgm_file(self, filename):
+        """ Writes to a file that can be read by libpgm
+
+        filename : str
+            File to write
+        """
+        json_dict = {"V":[],"E":[],"Vdata":{}}
+        for node in self.nodes_iter():
+            json_dict["V"].append(node)
+            json_dict["Vdata"][node] = {}
+            json_dict["Vdata"][node]["numoutcomes"] = len(self.node[node]['cpd']._node_values)
+            json_dict["Vdata"][node]["vals"] = list(self.node[node]['cpd']._node_values)
+            if len(self.predecessors(node)) == 0:
+                json_dict["Vdata"][node]["parents"] = None
+            else:
+                json_dict["Vdata"][node]["parents"] = list(self.node[node]['cpd'].get_parents())
+            if len(self.successors(node)) == 0:
+                json_dict["Vdata"][node]["children"] = None
+            else:
+                json_dict["Vdata"][node]["children"] = self.successors(node)
+            if len(self.node[node]['cpd']._prob_dict) == 1:
+                json_dict["Vdata"][node]["cprob"] = self.node[node]['cpd']._prob_dict.values()[0].tolist()
+            else:
+                json_dict["Vdata"][node]["cprob"] = {}
+                for k,v in self.node[node]['cpd']._prob_dict.items():
+                    json_dict["Vdata"][node]["cprob"][str(list(k))] = v.tolist()
+        for e1,e2 in self.edges_iter():
+            json_dict["E"].append([e1,e2])
+        handle = open(filename,'w')
+        write_libpgm_json(json_dict,handle)
+        handle.close()
+        return
+                
+            
 

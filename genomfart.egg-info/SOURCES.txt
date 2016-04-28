@@ -14,6 +14,8 @@ genomfart/parsers/gff.py
 genomfart/parsers/vcf.py
 genomfart/popgen/__init__.py
 genomfart/popgen/genetic_relationship.py
+genomfart/stats/__init__.py
+genomfart/stats/pgm.py
 genomfart/test/__init__.py
 genomfart/test/parsers/__init__.py
 genomfart/test/parsers/gffTest.py
